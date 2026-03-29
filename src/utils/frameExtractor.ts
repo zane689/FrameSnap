@@ -53,7 +53,7 @@ export class CanvasFrameExtractor {
   async extractFrame(timestamp: number): Promise<string> {
     if (!this.video) throw new Error('视频未加载');
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       const onSeeked = () => {
         this.video!.removeEventListener('seeked', onSeeked);
         
@@ -62,8 +62,8 @@ export class CanvasFrameExtractor {
         resolve(dataUrl);
       };
 
-      this.video.addEventListener('seeked', onSeeked);
-      this.video.currentTime = timestamp / 1000;
+      this.video!.addEventListener('seeked', onSeeked);
+      this.video!.currentTime = timestamp / 1000;
     });
   }
 
@@ -186,7 +186,7 @@ export class FFmpegWorkerManager {
 // 智能抽帧策略选择器
 export function selectExtractStrategy(file: File): ExtractMode {
   const size = file.size;
-  const duration = 0; // 实际应该从视频元数据获取
+  // const duration = 0; // 实际应该从视频元数据获取
 
   // 小文件 (< 50MB): 使用 Canvas 快速抽帧
   if (size < 50 * 1024 * 1024) {

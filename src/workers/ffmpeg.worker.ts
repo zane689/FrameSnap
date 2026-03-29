@@ -34,7 +34,7 @@ class FFmpegWorker {
   private ffmpeg: FFmpeg | null = null;
   private isInitialized = false;
   private abortController: AbortController | null = null;
-  private config: ExtractConfig | null = null;
+  // private config: ExtractConfig | null = null;
 
   async initialize() {
     if (this.isInitialized) return;
@@ -73,7 +73,7 @@ class FFmpegWorker {
       return;
     }
 
-    this.config = config;
+    // this.config = config;
     this.abortController = new AbortController();
 
     try {
@@ -156,8 +156,9 @@ class FFmpegWorker {
         const fileName = `frame_${seg}_${String(i + 1).padStart(3, '0')}.png`;
 
         try {
-          const data = await this.ffmpeg!.readFile(fileName);
-          const blob = new Blob([data], { type: 'image/png' });
+          const data = await this.ffmpeg!.readFile(fileName) as Uint8Array;
+          const buffer = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
+          const blob = new Blob([buffer], { type: 'image/png' });
           const dataUrl = await this.blobToDataUrl(blob);
 
           frames.push({
@@ -179,8 +180,10 @@ class FFmpegWorker {
       }
 
       // 强制垃圾回收建议
-      if (globalThis.gc) {
-        globalThis.gc();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const globalAny = globalThis as any;
+      if (globalAny.gc) {
+        globalAny.gc();
       }
     }
 
@@ -250,8 +253,9 @@ class FFmpegWorker {
 
       const fileName = `scene_${String(index).padStart(3, '0')}.png`;
       try {
-        const data = await this.ffmpeg!.readFile(fileName);
-        const blob = new Blob([data], { type: 'image/png' });
+        const data = await this.ffmpeg!.readFile(fileName) as Uint8Array;
+        const buffer = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
+        const blob = new Blob([buffer], { type: 'image/png' });
         const dataUrl = await this.blobToDataUrl(blob);
 
         // 估算时间戳（实际应该通过 ffprobe 获取精确时间）
@@ -293,8 +297,9 @@ class FFmpegWorker {
         outputName
       ]);
 
-      const data = await this.ffmpeg!.readFile(outputName);
-      const blob = new Blob([data], { type: 'image/png' });
+      const data = await this.ffmpeg!.readFile(outputName) as Uint8Array;
+      const buffer = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
+      const blob = new Blob([buffer], { type: 'image/png' });
       const dataUrl = await this.blobToDataUrl(blob);
       
       await this.ffmpeg!.deleteFile(outputName);

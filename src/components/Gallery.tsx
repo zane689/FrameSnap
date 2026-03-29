@@ -17,7 +17,7 @@ interface GalleryProps {
   onClearSelection: () => void;
   onRemoveFrame: (id: string) => void;
   onClearAll: () => void;
-  onDownloadSelected: () => void;
+  onDownloadSelected?: () => void;
 }
 
 export function Gallery({
@@ -28,7 +28,7 @@ export function Gallery({
   onClearSelection,
   onRemoveFrame,
   onClearAll,
-  onDownloadSelected
+  onDownloadSelected: _onDownloadSelected
 }: GalleryProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);

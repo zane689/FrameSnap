@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FrameResult } from '../workers/ffmpeg.worker';
-import type { ExtractMode, ExtractOptions, ExtractProgress } from '../utils/frameExtractor';
+import type { ExtractOptions, ExtractProgress } from '../utils/frameExtractor';
 import { FFmpegWorkerManager, CanvasFrameExtractor } from '../utils/frameExtractor';
 
 interface UseFFmpegWorkerOptions {
