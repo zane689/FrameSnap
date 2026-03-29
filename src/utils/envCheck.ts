@@ -72,20 +72,13 @@ function checkPromise(): boolean {
 
 /**
  * 执行完整环境检查
+ * 注意：SharedArrayBuffer 不是必须的，应用可以降级到 Canvas 模式运行
  */
 export function checkEnvironment(): EnvCheckResult {
   const missingFeatures: string[] = [];
   const warnings: string[] = [];
 
-  // 必要特性检查
-  if (!checkSharedArrayBuffer()) {
-    missingFeatures.push('SharedArrayBuffer');
-  }
-
-  if (!checkWebWorker()) {
-    missingFeatures.push('Web Worker');
-  }
-
+  // 必要特性检查（核心功能）
   if (!checkCanvas()) {
     missingFeatures.push('Canvas');
   }
@@ -98,7 +91,15 @@ export function checkEnvironment(): EnvCheckResult {
     missingFeatures.push('Promise');
   }
 
-  // 警告检查（非致命但影响体验）
+  // 警告检查（非致命，有降级方案）
+  if (!checkSharedArrayBuffer()) {
+    warnings.push('SharedArrayBuffer');
+  }
+
+  if (!checkWebWorker()) {
+    warnings.push('Web Worker');
+  }
+
   if (!checkCrossOriginIsolation()) {
     warnings.push('crossOriginIsolation');
   }

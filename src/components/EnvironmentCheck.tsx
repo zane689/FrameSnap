@@ -19,6 +19,9 @@ export function EnvironmentCheck() {
   if (envCheck.isSupported) {
     // 如果有警告，显示一个小提示
     if (envCheck.warnings.length > 0) {
+      const hasSharedArrayBufferWarning = envCheck.warnings.includes('SharedArrayBuffer');
+      const hasWebWorkerWarning = envCheck.warnings.includes('Web Worker');
+      
       return (
         <div className="fixed top-4 right-4 z-50 max-w-sm">
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 backdrop-blur-sm">
@@ -26,7 +29,15 @@ export function EnvironmentCheck() {
               <Info className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
               <div className="text-xs text-amber-200">
                 <p className="font-medium mb-1">性能提示</p>
-                <p>未检测到跨域隔离，FFmpeg 处理大文件时可能会较慢。</p>
+                {hasSharedArrayBufferWarning && (
+                  <p>未检测到 SharedArrayBuffer，将使用 Canvas 模式（适合小文件）。</p>
+                )}
+                {hasWebWorkerWarning && (
+                  <p>Web Worker 不可用，将在主线程处理。</p>
+                )}
+                {!hasSharedArrayBufferWarning && !hasWebWorkerWarning && (
+                  <p>未检测到跨域隔离，FFmpeg 处理大文件时可能会较慢。</p>
+                )}
               </div>
             </div>
           </div>

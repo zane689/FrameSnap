@@ -21,9 +21,18 @@ function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ffmpegRef = useRef<FFmpeg | null>(null);
 
-  // Initialize FFmpeg
+  // Initialize FFmpeg (可选，失败时会使用 Canvas 模式)
   useEffect(() => {
     const loadFFmpeg = async () => {
+      // 检查是否支持 SharedArrayBuffer
+      const hasSharedArrayBuffer = typeof SharedArrayBuffer !== 'undefined';
+      
+      if (!hasSharedArrayBuffer) {
+        console.log('SharedArrayBuffer not available, skipping FFmpeg initialization');
+        setFfmpegLoaded(true);
+        return;
+      }
+
       try {
         const ffmpeg = new FFmpeg();
         ffmpegRef.current = ffmpeg;
