@@ -7,8 +7,14 @@ import { Gallery, type Frame } from './components/Gallery';
 import { SelectionBar } from './components/SelectionBar';
 import { EnvironmentCheck } from './components/EnvironmentCheck';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
+import { LandingPage } from './components/LandingPage';
+import { useSmoothScroll } from './hooks/useSmoothScroll';
 
 function App() {
+  // Enable smooth scroll
+  useSmoothScroll();
+
+  const [showApp, setShowApp] = useState(false);
   const [ffmpegLoaded, setFfmpegLoaded] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -198,8 +204,13 @@ function App() {
     };
   }, [videoUrl]);
 
+  // Show landing page first
+  if (!showApp) {
+    return <LandingPage onStart={() => setShowApp(true)} />;
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-x-hidden flex flex-col">
+    <div className="overflow-x-hidden">
       {/* 环境检查遮罩层 */}
       <EnvironmentCheck />
 
@@ -208,7 +219,7 @@ function App() {
 
       <Header ffmpegLoaded={ffmpegLoaded} />
 
-      <div className="flex-1 max-w-[1200px] mx-auto w-full px-4 py-6 pb-24">
+      <div className="max-w-[1200px] mx-auto w-full px-4 pt-6">
         <VideoPlayer
           videoRef={videoRef}
           videoUrl={videoUrl}

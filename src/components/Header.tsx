@@ -6,60 +6,58 @@ interface HeaderProps {
 
 export function Header({ ffmpegLoaded }: HeaderProps) {
   return (
-    <header className="w-full bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50 sticky top-0 z-50">
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-        {/* Logo Section */}
-        <div className="flex items-center gap-3">
-          <div className="relative group">
-            {/* Animated glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 rounded-xl blur-lg opacity-60 group-hover:opacity-80 transition-opacity duration-500 animate-pulse-slow" />
-            {/* Inner glow */}
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-400/20 to-blue-400/20 rounded-xl" />
-            {/* Icon container */}
-            <div className="relative p-2.5 bg-slate-900/90 rounded-xl border border-slate-700/50 backdrop-blur-sm group-hover:border-indigo-500/50 transition-all duration-300 group-hover:scale-105">
-              <Camera className="w-6 h-6 text-indigo-400 group-hover:text-indigo-300 transition-colors" />
+    <header className="w-full sticky top-0 z-50">
+      <div className="w-full">
+        <div className="bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-amber-500/10 px-4 sm:px-6 py-4 flex items-center justify-between">
+          <div className="max-w-[1200px] mx-auto w-full flex items-center justify-between">
+            {/* Logo Section */}
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                {/* Outer glow ring - amber */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/30 via-orange-500/20 to-amber-500/30 rounded-xl blur-sm opacity-60 animate-glow-pulse" />
+                <div className="relative p-3 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-xl border border-amber-400/40 shadow-soft">
+                  <Camera className="w-6 h-6 text-amber-400" />
+                  {/* Subtle sparkle */}
+                  <div className="absolute -top-1 -right-1 text-amber-300 animate-pulse">
+                    <Sparkles className="w-3 h-3" />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl font-bold tracking-tight">
+                    <span className="bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent">Frame</span>
+                    <span className="text-zinc-500">Snap</span>
+                  </h1>
+                </div>
+                <p className="text-xs text-zinc-500 font-medium tracking-wider">专业视频取帧工具</p>
+              </div>
             </div>
-          </div>
-          
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-blue-400 bg-clip-text text-transparent">
-                FrameSnap
-              </h1>
-              <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
-            </div>
-            <p className="text-xs text-slate-500 font-medium tracking-wide">专业视频取帧工具</p>
-          </div>
-        </div>
 
-        {/* Status Badge */}
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            {/* Status glow */}
-            <div className={`absolute inset-0 rounded-full blur-md transition-all duration-500 ${
-              ffmpegLoaded ? 'bg-emerald-500/30' : 'bg-amber-500/30'
-            }`} />
-            <div className={`
-              relative flex items-center gap-2 px-4 py-2 rounded-full border backdrop-blur-sm
-              transition-all duration-300 hover:scale-105
-              ${ffmpegLoaded 
-                ? 'bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/20' 
-                : 'bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20'
-              }
-            `}>
-              <Activity className={`w-4 h-4 transition-all duration-300 ${
-                ffmpegLoaded ? 'text-emerald-400' : 'text-amber-400 animate-pulse'
-              }`} />
-              <span className={`text-xs font-semibold transition-colors ${
-                ffmpegLoaded ? 'text-emerald-400' : 'text-amber-400'
-              }`}>
-                {ffmpegLoaded ? '系统就绪' : '初始化中...'}
-              </span>
-              {/* Status dot */}
+            {/* Status Badge */}
+            <div className="flex items-center gap-3">
               <div className={`
-                w-1.5 h-1.5 rounded-full transition-all duration-300
-                ${ffmpegLoaded ? 'bg-emerald-400' : 'bg-amber-400 animate-ping'}
-              `} />
+                relative flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-500
+                ${ffmpegLoaded 
+                  ? 'bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border-emerald-500/30 text-emerald-200' 
+                  : 'bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-500/30 text-amber-200'
+                }
+              `}>
+                <Activity className={`w-4 h-4 transition-all duration-300 ${
+                  ffmpegLoaded ? 'text-emerald-400' : 'text-amber-400 animate-pulse'
+                }`} />
+                <span className="text-xs font-semibold">
+                  {ffmpegLoaded ? '系统就绪' : '初始化中'}
+                </span>
+                <div className={`
+                  w-1.5 h-1.5 rounded-full transition-all duration-300
+                  ${ffmpegLoaded 
+                    ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]' 
+                    : 'bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.6)]'
+                  }
+                `} />
+              </div>
             </div>
           </div>
         </div>
