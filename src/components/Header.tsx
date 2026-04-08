@@ -27,8 +27,8 @@ export function Header({ ffmpegLoaded }: HeaderProps) {
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
                   <h1 className="text-xl font-bold tracking-tight">
-                    <span className="bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent">Frame</span>
-                    <span className="text-zinc-500">Snap</span>
+                    <span className="bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent">Vid</span>
+                    <span className="text-zinc-500">till</span>
                   </h1>
                 </div>
                 <p className="text-xs text-zinc-500 font-medium tracking-wider">专业视频取帧工具</p>

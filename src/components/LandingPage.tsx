@@ -83,8 +83,8 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 <Camera className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400" />
               </div>
               <span className="text-xl sm:text-2xl font-bold">
-                <span className="bg-gradient-to-r from-amber-300 via-orange-300 to-amber-300 bg-clip-text text-transparent">Frame</span>
-                <span className="text-zinc-500">Snap</span>
+                <span className="bg-gradient-to-r from-amber-300 via-orange-300 to-amber-300 bg-clip-text text-transparent">Vid</span>
+                <span className="text-zinc-500">till</span>
               </span>
             </div>
             
@@ -365,8 +365,8 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 <Camera className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400" />
               </div>
               <span className="text-xl sm:text-2xl font-bold">
-                <span className="bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent">Frame</span>
-                <span className="text-zinc-500">Snap</span>
+                <span className="bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent">Vid</span>
+                <span className="text-zinc-500">till</span>
               </span>
             </div>
             <div className="flex items-center gap-4 sm:gap-6">
