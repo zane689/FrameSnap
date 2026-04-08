@@ -1,9 +1,9 @@
 /**
- * FrameSnap Service Worker
+ * Vidtill Service Worker
  * 提供离线缓存支持
  */
 
-const CACHE_NAME = 'framesnap-v1';
+const CACHE_NAME = 'vidtill-v1';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

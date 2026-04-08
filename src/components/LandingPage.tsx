@@ -189,7 +189,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
 
             {/* Subtitle */}
             <p className="text-base sm:text-xl lg:text-2xl text-zinc-300 max-w-2xl lg:max-w-3xl mx-auto mb-8 sm:mb-12 leading-relaxed px-2 sm:px-0">
-              FrameSnap 是一款专业的在线视频帧提取工具。支持批量提取视频帧、
+              Vidtill 是一款专业的在线视频帧提取工具。支持批量提取视频帧、
               生成电影感长图，<span className="text-amber-400 font-semibold">所有处理均在浏览器本地完成</span>，保护您的隐私安全。
             </p>
 
@@ -340,7 +340,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
             准备好开始了吗？
           </h2>
           <p className="text-base sm:text-xl text-zinc-300 mb-8 sm:mb-12 max-w-2xl mx-auto leading-relaxed px-2 sm:px-0">
-            立即体验 FrameSnap，免费提取您的视频帧。无需注册，打开即用。
+            立即体验 Vidtill，免费提取您的视频帧。无需注册，打开即用。
           </p>
           <button
             onClick={handleStart}
@@ -375,7 +375,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
               <a href="#" className="text-sm sm:text-base text-zinc-400 hover:text-amber-400 transition-colors">反馈</a>
             </div>
             <p className="text-sm sm:text-base text-zinc-500 text-center">
-              © 2024 FrameSnap. 基于 FFmpeg 构建，本地处理保护隐私。
+              © 2024 Vidtill. 基于 FFmpeg 构建，本地处理保护隐私。
             </p>
           </div>
         </div>

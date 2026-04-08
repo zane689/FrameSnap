@@ -80,7 +80,7 @@ export function PWAInstallPrompt() {
             <Smartphone className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-white mb-1">安装 FrameSnap</h3>
+            <h3 className="text-sm font-semibold text-white mb-1">安装 Vidtill</h3>
             <p className="text-xs text-slate-400 mb-3">
               添加到主屏幕，离线也能使用，体验更流畅
             </p>
