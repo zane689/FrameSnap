@@ -15,14 +15,16 @@ export default defineConfig({
   },
   worker: {
     format: 'es',
-    plugins: [],
+    plugins: () => [],
   },
   build: {
     target: 'esnext',
     rollupOptions: {
       output: {
-        manualChunks: {
-          ffmpeg: ['@ffmpeg/ffmpeg', '@ffmpeg/util'],
+        manualChunks: (id) => {
+          if (id.includes('@ffmpeg')) {
+            return 'ffmpeg'
+          }
         },
       },
     },
