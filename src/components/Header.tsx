@@ -1,10 +1,14 @@
 import { Camera, Activity, Sparkles } from 'lucide-react';
+import { LanguageSwitcher } from '../i18n/LanguageSwitcher';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface HeaderProps {
   ffmpegLoaded: boolean;
 }
 
 export function Header({ ffmpegLoaded }: HeaderProps) {
+  const { t } = useLanguage();
+
   return (
     <header className="w-full sticky top-0 z-50">
       <div className="w-full">
@@ -31,12 +35,16 @@ export function Header({ ffmpegLoaded }: HeaderProps) {
                     <span className="text-zinc-500">till</span>
                   </h1>
                 </div>
-                <p className="text-xs text-zinc-500 font-medium tracking-wider">专业视频取帧工具</p>
+                <p className="text-xs text-zinc-500 font-medium tracking-wider">{t('app.status.ready') as string}</p>
               </div>
             </div>
 
-            {/* Status Badge */}
+            {/* Right Section: Language Switcher + Status */}
             <div className="flex items-center gap-3">
+              {/* Language Switcher */}
+              <LanguageSwitcher />
+
+              {/* Status Badge */}
               <div className={`
                 relative flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-500
                 ${ffmpegLoaded 
@@ -48,7 +56,7 @@ export function Header({ ffmpegLoaded }: HeaderProps) {
                   ffmpegLoaded ? 'text-emerald-400' : 'text-amber-400 animate-pulse'
                 }`} />
                 <span className="text-xs font-semibold">
-                  {ffmpegLoaded ? '系统就绪' : '初始化中'}
+                  {ffmpegLoaded ? (t('app.status.ready') as string) : (t('app.status.loading') as string)}
                 </span>
                 <div className={`
                   w-1.5 h-1.5 rounded-full transition-all duration-300

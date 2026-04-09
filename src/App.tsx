@@ -9,8 +9,9 @@ import { EnvironmentCheck } from './components/EnvironmentCheck';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { LandingPage } from './components/LandingPage';
 import { useSmoothScroll } from './hooks/useSmoothScroll';
+import { LanguageProvider } from './i18n/LanguageContext';
 
-function App() {
+function AppContent() {
   // Enable smooth scroll
   useSmoothScroll();
 
@@ -252,6 +253,14 @@ function App() {
 
       <canvas ref={canvasRef} className="canvas-hidden" />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   );
 }
 
