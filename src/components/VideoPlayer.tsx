@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import { Upload, Play, Pause, Film, Loader2, Images, RefreshCw, RotateCcw, Monitor } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface VideoPlayerProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -20,6 +21,7 @@ export function VideoPlayer({
   isExtracting,
   extractionProgress
 }: VideoPlayerProps) {
+  const { t } = useLanguage();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -171,13 +173,13 @@ export function VideoPlayer({
             </div>
             
             <h3 className="text-2xl font-bold text-zinc-100 mb-2">
-              拖拽视频到此处
+              {t('videoPlayer.dragDrop') as string}
             </h3>
-            <p className="text-zinc-400 mb-6 text-base">或点击选择视频文件</p>
+            <p className="text-zinc-400 mb-6 text-base">{t('videoPlayer.orClick') as string}</p>
             
             <div className="flex items-center justify-center gap-3 px-4 py-2 bg-zinc-900/50 rounded-xl border border-amber-500/20 inline-flex">
               <Film className="w-4 h-4 text-amber-400" />
-              <span className="text-sm text-amber-100/80 font-medium">MP4, MOV, AVI, WebM</span>
+              <span className="text-sm text-amber-100/80 font-medium">{t('videoPlayer.formats') as string}</span>
             </div>
           </div>
         </div>
@@ -206,7 +208,7 @@ export function VideoPlayer({
               <div className="absolute -inset-4 bg-gradient-to-r from-amber-500/25 via-orange-500/20 to-amber-500/25 rounded-full blur-xl animate-glow-pulse" />
               <Loader2 className="w-12 h-12 text-amber-400 animate-spin relative" />
             </div>
-            <p className="text-lg font-semibold text-amber-100 mb-3 mt-4">正在提取视频帧</p>
+            <p className="text-lg font-semibold text-amber-100 mb-3 mt-4">{t('videoPlayer.extracting') as string}</p>
             <div className="w-64 h-2 bg-zinc-800 rounded-full overflow-hidden relative">
               <div className="absolute inset-0 bg-zinc-800" />
               <div
@@ -241,10 +243,10 @@ export function VideoPlayer({
             onClick={onReupload}
             disabled={isExtracting}
             className="premium-card rounded-lg flex items-center gap-2 px-3 py-2 transition-all duration-300 disabled:opacity-50 cursor-pointer shadow-medium hover:shadow-strong border-amber-500/20"
-            title="重新上传视频"
+            title={t('videoPlayer.changeVideo') as string}
           >
             <RefreshCw className="w-4 h-4 text-amber-400" />
-            <span className="text-sm text-amber-100/80 font-medium">更换视频</span>
+            <span className="text-sm text-amber-100/80 font-medium">{t('videoPlayer.changeVideo') as string}</span>
           </button>
         </div>
 
@@ -291,10 +293,10 @@ export function VideoPlayer({
             onClick={onReupload}
             disabled={isExtracting}
             className="flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 hover:from-zinc-700 hover:to-zinc-800 text-amber-100/90 transition-all duration-300 disabled:opacity-50 cursor-pointer border border-amber-500/20 shadow-soft hover:shadow-medium"
-            title="重置"
+            title={t('videoPlayer.reset') as string}
           >
             <RotateCcw className="w-5 h-5 text-amber-400" />
-            <span className="text-sm font-semibold">重置</span>
+            <span className="text-sm font-semibold">{t('videoPlayer.reset') as string}</span>
           </button>
 
           <div className="w-px h-8 bg-gradient-to-b from-transparent via-slate-700/50 to-transparent" />
@@ -303,17 +305,17 @@ export function VideoPlayer({
             onClick={togglePlay}
             disabled={isExtracting}
             className="relative flex items-center justify-center gap-2 h-11 px-10 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:via-orange-400 hover:to-amber-400 text-white transition-all duration-200 disabled:opacity-50 min-w-[130px] cursor-pointer shadow-lg shadow-amber-500/20"
-            title="播放/暂停 (Space)"
+            title={t('videoPlayer.spaceToPlay') as string}
           >
             {isPlaying ? (
               <>
                 <Pause className="w-5 h-5" />
-                <span className="text-sm font-bold">暂停</span>
+                <span className="text-sm font-bold">{t('videoPlayer.pause') as string}</span>
               </>
             ) : (
               <>
                 <Play className="w-5 h-5 ml-0.5" />
-                <span className="text-sm font-bold">播放</span>
+                <span className="text-sm font-bold">{t('videoPlayer.play') as string}</span>
               </>
             )}
           </button>
@@ -324,10 +326,10 @@ export function VideoPlayer({
             onClick={onExtractAll}
             disabled={isExtracting}
             className="relative flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:from-rose-400 hover:via-orange-400 hover:to-amber-400 text-white transition-all duration-300 disabled:opacity-50 cursor-pointer shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 hover:scale-[1.02]"
-            title="一键提取全部帧"
+            title={t('videoPlayer.extractAll') as string}
           >
             <Images className="w-5 h-5" />
-            <span className="text-sm font-bold">提取全部帧</span>
+            <span className="text-sm font-bold">{t('videoPlayer.extractAll') as string}</span>
           </button>
         </div>
       </div>

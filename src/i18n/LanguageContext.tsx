@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import { translations } from './translations';
 import type { Language } from './translations';
+import { updateSEO } from '../utils/seo';
 
 interface LanguageContextType {
   currentLanguage: Language;
@@ -19,27 +20,62 @@ const availableLanguages = [
   { code: 'ko' as Language, name: '한국어' },
 ];
 
+// Map of language codes to our supported languages
+const languageCodeMap: Record<string, Language> = {
+  'zh': 'zh-CN', 'zh-CN': 'zh-CN', 'zh-SG': 'zh-CN', 'zh-MY': 'zh-CN',
+  'zh-TW': 'zh-TW', 'zh-HK': 'zh-TW', 'zh-MO': 'zh-TW',
+  'ja': 'ja', 'ja-JP': 'ja',
+  'ko': 'ko', 'ko-KR': 'ko', 'ko-KP': 'ko',
+  'en': 'en', 'en-US': 'en', 'en-GB': 'en', 'en-CA': 'en', 'en-AU': 'en',
+  'en-NZ': 'en', 'en-IE': 'en', 'en-ZA': 'en', 'en-IN': 'en',
+};
+
 // Get initial language from localStorage or browser
 const getInitialLanguage = (): Language => {
   if (typeof window !== 'undefined') {
+    // Check localStorage first
     const saved = localStorage.getItem('vidtill-language') as Language;
     if (saved && translations[saved]) {
       return saved;
     }
-    
-    // Detect browser language
+
+    // Try to get language from browser
     const browserLang = navigator.language;
-    if (browserLang.startsWith('zh')) {
-      if (browserLang.includes('TW') || browserLang.includes('HK')) {
+
+    // First check exact language code match
+    if (languageCodeMap[browserLang]) {
+      return languageCodeMap[browserLang];
+    }
+
+    // Check base language code (e.g., 'en-US' -> 'en')
+    const baseLang = browserLang.split('-')[0];
+    if (languageCodeMap[baseLang]) {
+      return languageCodeMap[baseLang];
+    }
+
+    // Try to infer from timezone for Chinese variants
+    try {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (timezone.includes('Taipei') || timezone.includes('Hong_Kong') || timezone.includes('Macau')) {
         return 'zh-TW';
       }
-      return 'zh-CN';
+      if (timezone.includes('Shanghai') || timezone.includes('Beijing') || timezone.includes('Singapore')) {
+        return 'zh-CN';
+      }
+      if (timezone.includes('Tokyo')) {
+        return 'ja';
+      }
+      if (timezone.includes('Seoul')) {
+        return 'ko';
+      }
+    } catch {
+      // Ignore timezone errors
     }
-    if (browserLang.startsWith('ja')) return 'ja';
-    if (browserLang.startsWith('ko')) return 'ko';
-    if (browserLang.startsWith('en')) return 'en';
+
+    // Default to English for all other languages
+    return 'en';
   }
-  return 'zh-CN';
+  return 'en';
 };
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
@@ -49,6 +85,20 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     setCurrentLanguage(lang);
     localStorage.setItem('vidtill-language', lang);
     document.documentElement.lang = lang;
+    
+    // Update SEO meta tags
+    const seoConfig = translations[lang].seo;
+    if (seoConfig) {
+      updateSEO(lang, seoConfig);
+    }
+  }, []);
+
+  // Update SEO on initial load
+  useEffect(() => {
+    const seoConfig = translations[currentLanguage].seo;
+    if (seoConfig) {
+      updateSEO(currentLanguage, seoConfig);
+    }
   }, []);
 
   const t = useCallback(

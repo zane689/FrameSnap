@@ -76,21 +76,21 @@ export function LandingPage({ onStart }: LandingPageProps) {
 
   const currentLang = availableLanguages.find(l => l.code === currentLanguage);
 
-  // Feature items with translation keys
+  // Feature items with translation keys and full Tailwind classes
   const featureItems = [
-    { icon: Film, key: 'batchExtract', color: 'amber' },
-    { icon: Layers, key: 'movieStrip', color: 'orange' },
-    { icon: Shield, key: 'privacy', color: 'emerald' },
-    { icon: Zap, key: 'speed', color: 'yellow' },
-    { icon: Download, key: 'download', color: 'rose' },
-    { icon: CheckCircle2, key: 'format', color: 'cyan' },
+    { icon: Film, key: 'batchExtract', bgClass: 'bg-gradient-to-br from-amber-500 to-amber-600', shadowClass: 'shadow-amber-500/30' },
+    { icon: Layers, key: 'movieStrip', bgClass: 'bg-gradient-to-br from-orange-500 to-orange-600', shadowClass: 'shadow-orange-500/30' },
+    { icon: Shield, key: 'privacy', bgClass: 'bg-gradient-to-br from-emerald-500 to-emerald-600', shadowClass: 'shadow-emerald-500/30' },
+    { icon: Zap, key: 'speed', bgClass: 'bg-gradient-to-br from-yellow-500 to-yellow-600', shadowClass: 'shadow-yellow-500/30' },
+    { icon: Download, key: 'download', bgClass: 'bg-gradient-to-br from-rose-500 to-rose-600', shadowClass: 'shadow-rose-500/30' },
+    { icon: CheckCircle2, key: 'format', bgClass: 'bg-gradient-to-br from-cyan-500 to-cyan-600', shadowClass: 'shadow-cyan-500/30' },
   ];
 
-  // Step items with translation keys
+  // Step items with translation keys and full Tailwind classes
   const stepItems = [
-    { icon: Video, key: 'upload', color: 'amber', num: 1 },
-    { icon: Scissors, key: 'extract', color: 'orange', num: 2 },
-    { icon: Download, key: 'download', color: 'rose', num: 3 },
+    { icon: Video, key: 'upload', bgClass: 'bg-gradient-to-br from-amber-500 to-orange-600', shadowClass: 'shadow-amber-500/30', num: 1 },
+    { icon: Scissors, key: 'extract', bgClass: 'bg-gradient-to-br from-orange-500 to-orange-600', shadowClass: 'shadow-orange-500/30', num: 2 },
+    { icon: Download, key: 'download', bgClass: 'bg-gradient-to-br from-rose-500 to-rose-600', shadowClass: 'shadow-rose-500/30', num: 3 },
   ];
 
   return (
@@ -369,7 +369,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
               <div key={index} className="group relative p-6 sm:p-8 bg-gradient-to-br from-zinc-900/90 to-zinc-900/50 backdrop-blur-xl rounded-2xl sm:rounded-3xl border border-zinc-700 hover:border-amber-500/50 transition-all duration-500 hover:scale-[1.02] overflow-hidden shadow-2xl shadow-black/50">
                 <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="relative">
-                  <div className={`w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-${feature.color}-500 to-${feature.color}-600 rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform shadow-xl shadow-${feature.color}-500/30`}>
+                  <div className={`w-12 h-12 sm:w-16 sm:h-16 ${feature.bgClass} rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform shadow-xl ${feature.shadowClass}`}>
                     <feature.icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                   </div>
                   <h3 className="text-lg sm:text-2xl font-bold mb-2 sm:mb-3 text-white group-hover:text-amber-300 transition-colors">
@@ -405,7 +405,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
           <div className="grid sm:grid-cols-3 gap-8 sm:gap-6 lg:gap-12">
             {stepItems.map((step, index) => (
               <div key={index} className="relative text-center group">
-                <div className={`w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-${step.color}-500 to-orange-600 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-4 sm:mb-6 lg:mb-8 shadow-xl sm:shadow-2xl shadow-${step.color}-500/30 group-hover:scale-110 transition-transform`}>
+                <div className={`w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 ${step.bgClass} rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-4 sm:mb-6 lg:mb-8 shadow-xl sm:shadow-2xl ${step.shadowClass} group-hover:scale-110 transition-transform`}>
                   <step.icon className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-white" />
                 </div>
                 <div className="absolute top-0 right-1/3 sm:-top-2 sm:right-1/4 w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-amber-500 rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-sm lg:text-lg shadow-lg">{step.num}</div>

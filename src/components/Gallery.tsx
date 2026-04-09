@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Image, Grid3X3, List, Trash2, Check, Download, X, Square, CheckSquare, Layers, Maximize2, Package, Minimize2 } from 'lucide-react';
+import { Image, Grid3X3, List, Trash2, Check, Download, X, Square, CheckSquare, Layers, Maximize2, Package, Fullscreen } from 'lucide-react';
 import JSZip from 'jszip';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export interface Frame {
   id: string;
@@ -30,10 +31,13 @@ export function Gallery({
   onClearAll,
   onDownloadSelected: _onDownloadSelected
 }: GalleryProps) {
+  const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
   const [previewFrame, setPreviewFrame] = useState<Frame | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
 
   const downloadFrame = useCallback((frame: Frame) => {
     const link = document.createElement('a');
@@ -43,6 +47,60 @@ export function Gallery({
     link.click();
     document.body.removeChild(link);
   }, []);
+
+  // Fullscreen functions
+  const enterFullscreen = useCallback(async () => {
+    if (previewContainerRef.current) {
+      try {
+        if (previewContainerRef.current.requestFullscreen) {
+          await previewContainerRef.current.requestFullscreen();
+        }
+      } catch (err) {
+        console.error('Failed to enter fullscreen:', err);
+      }
+    }
+  }, []);
+
+  const exitFullscreen = useCallback(async () => {
+    try {
+      if (document.exitFullscreen && document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.error('Failed to exit fullscreen:', err);
+    }
+  }, []);
+
+  const toggleFullscreen = useCallback(async () => {
+    if (document.fullscreenElement) {
+      await exitFullscreen();
+    } else {
+      await enterFullscreen();
+    }
+  }, [enterFullscreen, exitFullscreen]);
+
+  // Listen for fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  // Auto enter fullscreen when preview opens
+  useEffect(() => {
+    if (previewFrame) {
+      // Small delay to ensure the DOM is ready
+      const timer = setTimeout(() => {
+        enterFullscreen();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [previewFrame, enterFullscreen]);
 
   const downloadAllAsZip = async () => {
     if (frames.length === 0) return;
@@ -82,8 +140,13 @@ export function Gallery({
             <Layers className="w-12 h-12 text-amber-400" />
           </div>
         </div>
-        <h3 className="text-2xl font-bold text-amber-100 mb-3">暂无提取的帧</h3>
-        <p className="text-amber-200/60 text-lg">上传视频并点击<span className="text-amber-300 font-semibold"> "提取全部帧" </span>开始</p>
+        <h3 className="text-2xl font-bold text-amber-100 mb-3">{(t('gallery.noFrames') as string)}</h3>
+        <p className="text-amber-200/60 text-lg" dangerouslySetInnerHTML={{ 
+          __html: (t('gallery.uploadHint') as string).replace(
+            '"提取全部帧"', 
+            '<span class="text-amber-300 font-semibold">"提取全部帧"</span>'
+          ) 
+        }} />
       </div>
     );
   }
@@ -102,9 +165,9 @@ export function Gallery({
             </div>
             <div>
               <span className="text-sm font-bold text-amber-100">
-                已提取 <span className="text-amber-300 font-bold text-lg">{frames.length}</span> 帧
+                {(t('gallery.extracted') as string)} <span className="text-amber-300 font-bold text-lg">{frames.length}</span> {(t('gallery.frames') as string)}
               </span>
-              <p className="text-xs text-amber-200/50">点击缩略图选择，支持多选</p>
+              <p className="text-xs text-amber-200/50">{(t('gallery.selectTip') as string)}</p>
             </div>
             
             {/* View Mode Toggle */}
@@ -112,14 +175,14 @@ export function Gallery({
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-2 rounded-lg transition-all duration-200 ${viewMode === 'grid' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-medium' : 'text-amber-200/60 hover:text-amber-100 hover:bg-amber-500/10'}`}
-                title="网格视图"
+                title={t('gallery.gridView') as string}
               >
                 <Grid3X3 className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
                 className={`p-2 rounded-lg transition-all duration-200 ${viewMode === 'list' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-medium' : 'text-amber-200/60 hover:text-amber-100 hover:bg-amber-500/10'}`}
-                title="列表视图"
+                title={t('gallery.listView') as string}
               >
                 <List className="w-4 h-4" />
               </button>
@@ -135,12 +198,12 @@ export function Gallery({
               {selectedIds.size === frames.length ? (
                 <>
                   <Square className="w-4 h-4 text-amber-400" />
-                  <span className="text-sm font-semibold">取消全选</span>
+                  <span className="text-sm font-semibold">{(t('gallery.deselectAll') as string)}</span>
                 </>
               ) : (
                 <>
                   <CheckSquare className="w-4 h-4 text-amber-400" />
-                  <span className="text-sm font-semibold">全选</span>
+                  <span className="text-sm font-semibold">{(t('gallery.selectAll') as string)}</span>
                 </>
               )}
             </button>
@@ -154,7 +217,7 @@ export function Gallery({
             >
               <Package className="w-4 h-4" />
               <span className="text-sm font-bold">
-                {downloading ? '打包中...' : '下载全部'}
+                {downloading ? (t('gallery.packing') as string) : (t('gallery.downloadAll') as string)}
               </span>
             </button>
 
@@ -163,7 +226,7 @@ export function Gallery({
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 transition-all duration-200 hover:scale-105 cursor-pointer border border-rose-500/20"
             >
               <Trash2 className="w-4 h-4" />
-              <span className="text-sm font-semibold hidden sm:inline">清空</span>
+              <span className="text-sm font-semibold hidden sm:inline">{(t('gallery.clear') as string)}</span>
             </button>
           </div>
         </div>
@@ -201,7 +264,7 @@ export function Gallery({
 
                   <img
                     src={frame.dataUrl}
-                    alt={`Frame ${index + 1}`}
+                    alt={`${t('gallery.frame')} ${index + 1}`}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     loading="lazy"
                   />
@@ -235,6 +298,7 @@ export function Gallery({
                       setPreviewFrame(frame);
                     }}
                     className="absolute bottom-1.5 right-1.5 p-1.5 bg-zinc-900/70 backdrop-blur-sm rounded opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-amber-500/20 text-amber-300/70 hover:text-amber-200 z-20"
+                    title={t('gallery.preview') as string}
                   >
                     <Maximize2 className="w-3 h-3" />
                   </button>
@@ -247,7 +311,7 @@ export function Gallery({
                         downloadFrame(frame);
                       }}
                       className="p-1.5 rounded bg-zinc-800/90 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-all duration-200"
-                      title="下载"
+                      title={t('gallery.download') as string}
                     >
                       <Download className="w-3 h-3" />
                     </button>
@@ -257,7 +321,7 @@ export function Gallery({
                         onRemoveFrame(frame.id);
                       }}
                       className="p-1.5 rounded bg-zinc-800/90 hover:bg-red-600/90 text-zinc-400 hover:text-white transition-all duration-200"
-                      title="删除"
+                      title={t('gallery.delete') as string}
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -328,12 +392,12 @@ export function Gallery({
 
                 {/* Thumbnail */}
                 <div className="w-24 h-14 rounded-xl overflow-hidden border border-amber-500/20 flex-shrink-0 shadow-soft">
-                  <img src={frame.dataUrl} alt={`Frame ${index + 1}`} className="w-full h-full object-cover" />
+                  <img src={frame.dataUrl} alt={`${t('gallery.frame')} ${index + 1}`} className="w-full h-full object-cover" />
                 </div>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-amber-100">帧 #{index + 1}</p>
+                  <p className="text-sm font-semibold text-amber-100">{(t('gallery.frame') as string)} #{index + 1}</p>
                   <p className="text-xs text-amber-300/50 font-mono">{(frame.timestamp / 1000).toFixed(2)}s</p>
                 </div>
 
@@ -346,7 +410,7 @@ export function Gallery({
                       setPreviewFrame(frame);
                     }}
                     className="p-2 rounded-lg hover:bg-amber-500/10 text-amber-300/70 hover:text-amber-200 transition-all duration-200 cursor-pointer"
-                    title="全屏预览"
+                    title={t('gallery.preview') as string}
                   >
                     <Maximize2 className="w-4 h-4" />
                   </button>
@@ -356,6 +420,7 @@ export function Gallery({
                       downloadFrame(frame);
                     }}
                     className="p-2 rounded-lg hover:bg-amber-500/10 text-amber-300/70 hover:text-amber-200 transition-all duration-200 cursor-pointer"
+                    title={t('gallery.download') as string}
                   >
                     <Download className="w-4 h-4" />
                   </button>
@@ -365,6 +430,7 @@ export function Gallery({
                       onRemoveFrame(frame.id);
                     }}
                     className="p-2 rounded-lg hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 transition-all duration-200 cursor-pointer"
+                    title={t('gallery.delete') as string}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -375,174 +441,75 @@ export function Gallery({
         </div>
       )}
 
-      {/* Preview Modal - Full Screen */}
+      {/* Preview Modal */}
       {previewFrame && (
-        <FullScreenPreview
-          frame={previewFrame}
-          onClose={() => setPreviewFrame(null)}
-          onDownload={downloadFrame}
-        />
-      )}
-    </div>
-  );
-}
-
-// Full Screen Preview Component
-interface FullScreenPreviewProps {
-  frame: Frame;
-  onClose: () => void;
-  onDownload: (frame: Frame) => void;
-}
-
-function FullScreenPreview({ frame, onClose, onDownload }: FullScreenPreviewProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isReady, setIsReady] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
-
-  // Wait for DOM to be ready before entering fullscreen
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsReady(true);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Enter fullscreen when ready
-  useEffect(() => {
-    if (!isReady) return;
-
-    const container = containerRef.current;
-    if (!container) return;
-
-    const enterFullscreen = async () => {
-      try {
-        if (container.requestFullscreen) {
-          await container.requestFullscreen();
-        }
-      } catch (err) {
-        console.log('Fullscreen not supported');
-      }
-    };
-
-    // Delay fullscreen to avoid animation conflict
-    requestAnimationFrame(() => {
-      enterFullscreen();
-    });
-  }, [isReady]);
-
-  // Listen for fullscreen change
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const handleFullscreenChange = () => {
-      const isFs = document.fullscreenElement === container;
-      setIsFullscreen(isFs);
-      if (!isFs && isReady) {
-        onClose();
-      }
-    };
-
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    };
-  }, [onClose, isReady]);
-
-  // Exit fullscreen on unmount
-  useEffect(() => {
-    return () => {
-      if (document.fullscreenElement) {
-        document.exitFullscreen().catch(() => {});
-      }
-    };
-  }, []);
-
-  const toggleFullscreen = async () => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-      } else {
-        await container.requestFullscreen();
-      }
-    } catch (err) {
-      console.log('Fullscreen toggle failed');
-    }
-  };
-
-  return (
-    <div
-      ref={containerRef}
-      className="fixed inset-0 z-[9999] bg-black flex items-center justify-center"
-      onClick={onClose}
-    >
-      <div 
-        className="relative w-screen h-screen flex items-center justify-center overflow-hidden" 
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Top controls */}
-        <div className="fixed top-6 right-6 z-50 flex items-center gap-3">
-          {/* Fullscreen toggle */}
-          <button
-            onClick={toggleFullscreen}
-            className="p-2 bg-zinc-900/80 backdrop-blur-sm rounded-lg hover:bg-zinc-800 transition-all duration-200 cursor-pointer border border-zinc-700/50"
-            title={isFullscreen ? '退出全屏' : '全屏'}
-          >
-            {isFullscreen ? (
-              <Minimize2 className="w-4 h-4 text-zinc-300" />
-            ) : (
-              <Maximize2 className="w-4 h-4 text-zinc-300" />
-            )}
-          </button>
-
-          {/* Close button */}
-          <button
-            onClick={onClose}
-            className="p-2 bg-zinc-900/80 backdrop-blur-sm rounded-lg hover:bg-zinc-800 transition-all duration-200 cursor-pointer border border-zinc-700/50"
-          >
-            <X className="w-4 h-4 text-zinc-300" />
-          </button>
-        </div>
-
-        {/* Full screen image - centered */}
-        <div className="flex items-center justify-center w-full h-full p-4">
-          <img
-            src={frame.dataUrl}
-            alt="Preview"
-            className={`max-w-full max-h-full object-contain transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-            onLoad={() => setImageLoaded(true)}
-            style={{
-              maxWidth: 'calc(100vw - 32px)',
-              maxHeight: 'calc(100vh - 120px)'
-            }}
-          />
-          {!imageLoaded && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-8 h-8 border-2 border-zinc-600 border-t-zinc-300 rounded-full animate-spin" />
+        <div
+          ref={previewContainerRef}
+          className="fixed inset-0 bg-black z-[100] flex items-center justify-center"
+          onClick={() => {
+            exitFullscreen();
+            setPreviewFrame(null);
+          }}
+        >
+          <div className="relative w-full h-full flex flex-col items-center justify-center">
+            {/* Image container - True fullscreen */}
+            <div className="relative w-full h-full flex items-center justify-center">
+              <img
+                src={previewFrame.dataUrl}
+                alt="Preview"
+                className="w-full h-full object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
             </div>
-          )}
-        </div>
 
-        {/* Bottom info bar */}
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-2 bg-zinc-900/90 backdrop-blur-sm rounded-xl border border-zinc-700/50">
-          <span className="text-sm text-zinc-300 font-mono">
-            {(frame.timestamp / 1000).toFixed(2)}s
-          </span>
-          <div className="w-px h-4 bg-zinc-700" />
-          <button
-            onClick={() => onDownload(frame)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-100 hover:bg-white text-zinc-900 rounded-lg transition-all duration-200 cursor-pointer"
-          >
-            <Download className="w-4 h-4" />
-            <span className="text-sm font-medium">下载</span>
-          </button>
+            {/* Top bar controls */}
+            <div className="absolute top-4 right-4 flex gap-2 z-10">
+              {/* Fullscreen toggle button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFullscreen();
+                }}
+                className="p-3 bg-zinc-900/80 hover:bg-zinc-700 rounded-full text-white transition-all duration-200 hover:scale-110 shadow-lg"
+                title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+              >
+                {isFullscreen ? <Fullscreen className="w-5 h-5" /> : <Fullscreen className="w-5 h-5" />}
+              </button>
+
+              {/* Close button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  exitFullscreen();
+                  setPreviewFrame(null);
+                }}
+                className="p-3 bg-zinc-900/80 hover:bg-red-600 rounded-full text-white transition-all duration-200 hover:scale-110 shadow-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Frame info */}
+            <div className="absolute top-4 left-4 px-4 py-2 bg-zinc-900/80 rounded-lg text-white/80 text-sm font-mono">
+              {(previewFrame.timestamp / 1000).toFixed(2)}s
+            </div>
+
+            {/* Bottom action bar */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  downloadFrame(previewFrame);
+                }}
+                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white rounded-xl font-semibold transition-all shadow-lg hover:shadow-orange-500/30 hover:scale-105"
+              >
+                <Download className="w-4 h-4" />
+                {t('gallery.download') as string}
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
