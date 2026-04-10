@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { AlertTriangle, RefreshCw, Chrome, Globe, Info, CheckCircle, XCircle } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Chrome, Globe, Info, CheckCircle, XCircle, X } from 'lucide-react';
 import { checkEnvironment, getBrowserInfo, getSolutionUrl, type EnvCheckResult } from '../utils/envCheck';
 
 export function EnvironmentCheck() {
   const [envCheck, setEnvCheck] = useState<EnvCheckResult | null>(null);
   const [browserInfo, setBrowserInfo] = useState({ name: '', version: '', os: '' });
   const [showDetails, setShowDetails] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     const check = checkEnvironment();
@@ -18,7 +19,7 @@ export function EnvironmentCheck() {
   // 环境支持，不显示遮罩
   if (envCheck.isSupported) {
     // 如果有警告，显示一个小提示
-    if (envCheck.warnings.length > 0) {
+    if (envCheck.warnings.length > 0 && isVisible) {
       const hasSharedArrayBufferWarning = envCheck.warnings.includes('SharedArrayBuffer');
       const hasWebWorkerWarning = envCheck.warnings.includes('Web Worker');
       
@@ -27,7 +28,7 @@ export function EnvironmentCheck() {
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 backdrop-blur-sm">
             <div className="flex items-start gap-2">
               <Info className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-              <div className="text-xs text-amber-200">
+              <div className="text-xs text-amber-200 flex-1">
                 <p className="font-medium mb-1">性能提示</p>
                 {hasSharedArrayBufferWarning && (
                   <p>未检测到 SharedArrayBuffer，将使用 Canvas 模式（适合小文件）。</p>
@@ -39,6 +40,13 @@ export function EnvironmentCheck() {
                   <p>未检测到跨域隔离，FFmpeg 处理大文件时可能会较慢。</p>
                 )}
               </div>
+              <button
+                onClick={() => setIsVisible(false)}
+                className="p-1 text-amber-400/60 hover:text-amber-400 hover:bg-amber-500/10 rounded transition-colors flex-shrink-0"
+                title="关闭提示"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>
