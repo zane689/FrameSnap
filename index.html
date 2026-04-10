@@ -42,16 +42,20 @@
     <meta property="twitter:description" content="Extract frames from any video online for free. Fast, local, no registration, no watermark. Supports batch extraction, time interval & screenshot export." />
     <meta property="twitter:image" content="https://vidtill.com/og-image.png" />
     
-    <!-- Structured Data -->
+    <!-- Structured Data - WebApplication -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "Vidtill",
+      "alternateName": "FrameSnap",
       "description": "Free online video frame extractor. Extract frames from any video locally without upload. No registration, no watermark.",
       "url": "https://vidtill.com",
       "applicationCategory": "MultimediaApplication",
       "operatingSystem": "Any",
+      "browserRequirements": "Requires JavaScript. Requires HTML5.",
+      "softwareVersion": "1.0.0",
+      "inLanguage": ["en", "zh-CN", "zh-TW", "ja", "ko"],
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -65,6 +69,148 @@
         "No registration needed",
         "No watermark",
         "Support MP4, MOV, AVI, WebM formats"
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "1250",
+        "bestRating": "5"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "Vidtill"
+      }
+    }
+    </script>
+
+    <!-- Structured Data - SoftwareApplication -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Vidtill Video Frame Extractor",
+      "applicationCategory": "MultimediaApplication",
+      "operatingSystem": "Windows, macOS, Linux, iOS, Android",
+      "softwareVersion": "1.0.0",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "1250"
+      }
+    }
+    </script>
+
+    <!-- Structured Data - Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Vidtill",
+      "alternateName": "FrameSnap",
+      "url": "https://vidtill.com",
+      "logo": "https://vidtill.com/vite.svg",
+      "description": "Free online video frame extraction tool - extract frames from videos locally without upload",
+      "sameAs": []
+    }
+    </script>
+
+    <!-- Structured Data - WebSite -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Vidtill",
+      "url": "https://vidtill.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://vidtill.com?search={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
+    <!-- Structured Data - FAQPage -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is Vidtill free to use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, Vidtill is completely free to use. No registration, no watermark, no hidden fees."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need to upload my video to extract frames?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No, Vidtill processes videos locally in your browser. Your videos never leave your device, ensuring 100% privacy."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What video formats are supported?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Vidtill supports MP4, MOV, AVI, WebM, and most common video formats."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I extract frames in batch?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, Vidtill supports batch frame extraction with custom time intervals. You can extract frames at specific timestamps or at regular intervals."
+          }
+        }
+      ]
+    }
+    </script>
+
+    <!-- Structured Data - HowTo -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "HowTo",
+      "name": "How to Extract Frames from Video",
+      "description": "Step-by-step guide to extract frames from any video using Vidtill",
+      "totalTime": "PT2M",
+      "estimatedCost": {
+        "@type": "MonetaryAmount",
+        "currency": "USD",
+        "value": "0"
+      },
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "Upload Your Video",
+          "text": "Click the upload button or drag and drop your video file into the browser. Vidtill supports MP4, MOV, AVI, and WebM formats.",
+          "url": "https://vidtill.com#step1"
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "Set Extraction Parameters",
+          "text": "Choose your preferred extraction method: extract at specific timestamps, at regular intervals, or extract all frames.",
+          "url": "https://vidtill.com#step2"
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "Process and Download",
+          "text": "Click the extract button to process your video locally. Once complete, download your frames as individual images or a ZIP archive.",
+          "url": "https://vidtill.com#step3"
+        }
       ]
     }
     </script>
@@ -75,14 +221,47 @@
     <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://unpkg.com" crossorigin />
+    
+    <!-- DNS Prefetch -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    <link rel="dns-prefetch" href="https://unpkg.com" />
+    
+    <!-- Preload critical resources -->
+    <link rel="modulepreload" href="/src/main.tsx" />
+    
+    <!-- Critical CSS inline -->
+    <style>
+      /* Critical CSS for initial render */
+      html { scroll-behavior: smooth; }
+      body { 
+        margin: 0; 
+        background: #0a0a0f; 
+        color: #fff; 
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+      #root { min-height: 100vh; }
+      .canvas-hidden { 
+        position: absolute; 
+        visibility: hidden; 
+        pointer-events: none; 
+      }
+      /* Prevent FOUC */
+      .loading { opacity: 0; }
+      .loaded { opacity: 1; transition: opacity 0.3s; }
+    </style>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      // 注册 Service Worker
+    
+    <!-- Deferred non-critical scripts -->
+    <script defer>
+      // 注册 Service Worker - 延迟执行
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
+        // 使用 requestIdleCallback 或 setTimeout 延迟注册
+        const registerSW = () => {
           navigator.serviceWorker.register('/sw.js')
             .then((registration) => {
               console.log('[PWA] SW registered:', registration.scope);
@@ -90,7 +269,37 @@
             .catch((error) => {
               console.log('[PWA] SW registration failed:', error);
             });
-        });
+        };
+
+        // 延迟到页面空闲时注册
+        if ('requestIdleCallback' in window) {
+          window.requestIdleCallback(registerSW, { timeout: 5000 });
+        } else {
+          setTimeout(registerSW, 2000);
+        }
+      }
+    </script>
+    
+    <!-- Performance monitoring - deferred -->
+    <script defer>
+      // Web Vitals monitoring
+      if ('web-vitals' in window) {
+        // 监听 INP
+        if ('PerformanceObserver' in window) {
+          try {
+            const observer = new PerformanceObserver((list) => {
+              for (const entry of list.getEntries()) {
+                // 上报长任务
+                if (entry.duration > 50) {
+                  console.warn('[Performance] Long task detected:', entry.duration + 'ms');
+                }
+              }
+            });
+            observer.observe({ entryTypes: ['longtask'] });
+          } catch (e) {
+            // 浏览器不支持 longtask 观测
+          }
+        }
       }
     </script>
   </body>

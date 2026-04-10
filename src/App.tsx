@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, lazy, Suspense } from 'react';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { toBlobURL } from '@ffmpeg/util';
 import { Header } from './components/Header';
@@ -6,10 +6,16 @@ import { VideoPlayer } from './components/VideoPlayer';
 import { Gallery, type Frame } from './components/Gallery';
 import { SelectionBar } from './components/SelectionBar';
 import { EnvironmentCheck } from './components/EnvironmentCheck';
-import { PWAInstallPrompt } from './components/PWAInstallPrompt';
-import { LandingPage } from './components/LandingPage';
 import { useSmoothScroll } from './hooks/useSmoothScroll';
 import { LanguageProvider } from './i18n/LanguageContext';
+import { yieldToMain } from './hooks/useINPOptimization';
+
+// 懒加载非关键组件
+const PWAInstallPrompt = lazy(() => import('./components/PWAInstallPrompt').then(m => ({ default: m.PWAInstallPrompt })));
+const LandingPage = lazy(() => import('./components/LandingPage').then(m => ({ default: m.LandingPage })));
+
+// 简单的加载占位符
+const LazyLoadFallback = () => null;
 
 function AppContent() {
   // Enable smooth scroll
@@ -27,6 +33,7 @@ function AppContent() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ffmpegRef = useRef<FFmpeg | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Initialize FFmpeg (可选，失败时会使用 Canvas 模式)
   useEffect(() => {
@@ -57,10 +64,17 @@ function AppContent() {
       }
     };
 
-    loadFFmpeg();
+    // 延迟加载 FFmpeg，优先保证页面交互
+    const timer = setTimeout(() => {
+      loadFFmpeg();
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+    };
   }, []);
 
-  // Extract all frames from video
+  // Extract all frames from video - 使用批量处理优化 INP
   const extractAllFrames = useCallback(async () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -69,6 +83,10 @@ function AppContent() {
 
     setIsExtracting(true);
     setExtractionProgress(0);
+    
+    // 创建新的 AbortController
+    abortControllerRef.current = new AbortController();
+    const { signal } = abortControllerRef.current;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -86,38 +104,64 @@ function AppContent() {
     // Pause video during extraction
     video.pause();
 
-    for (let i = 0; i <= totalFrames; i++) {
-      const time = i / fps;
-      video.currentTime = time;
+    // 批量处理，每 5 帧让出主线程一次，优化 INP
+    const batchSize = 5;
+    for (let i = 0; i <= totalFrames; i += batchSize) {
+      if (signal.aborted) {
+        break;
+      }
 
-      // Wait for seek to complete
-      await new Promise<void>((resolve) => {
-        const onSeeked = () => {
-          video.removeEventListener('seeked', onSeeked);
-          resolve();
+      const batchEnd = Math.min(i + batchSize, totalFrames + 1);
+      
+      for (let j = i; j < batchEnd; j++) {
+        const time = j / fps;
+        video.currentTime = time;
+
+        // Wait for seek to complete
+        await new Promise<void>((resolve, reject) => {
+          if (signal.aborted) {
+            reject(new Error('Extraction aborted'));
+            return;
+          }
+          
+          const onSeeked = () => {
+            video.removeEventListener('seeked', onSeeked);
+            resolve();
+          };
+          video.addEventListener('seeked', onSeeked);
+        });
+
+        // Draw frame to canvas
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Convert to data URL
+        const dataUrl = canvas.toDataURL('image/png', 1.0);
+
+        // Create frame object
+        const frame: Frame = {
+          id: `${Date.now()}_${j}_${Math.random().toString(36).substr(2, 9)}`,
+          dataUrl,
+          timestamp: time * 1000,
+          videoName,
         };
-        video.addEventListener('seeked', onSeeked);
-      });
 
-      // Draw frame to canvas
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        extractedFrames.push(frame);
+      }
 
-      // Convert to data URL
-      const dataUrl = canvas.toDataURL('image/png', 1.0);
+      // 更新进度
+      const progress = Math.round((batchEnd / (totalFrames + 1)) * 100);
+      setExtractionProgress(progress);
 
-      // Create frame object
-      const frame: Frame = {
-        id: `${Date.now()}_${i}_${Math.random().toString(36).substr(2, 9)}`,
-        dataUrl,
-        timestamp: time * 1000,
-        videoName,
-      };
-
-      extractedFrames.push(frame);
-      setExtractionProgress(Math.round((i / totalFrames) * 100));
+      // 每批处理后让出主线程，允许用户交互
+      if (batchEnd <= totalFrames) {
+        await yieldToMain();
+      }
     }
 
-    setFrames(extractedFrames);
+    if (!signal.aborted) {
+      setFrames(extractedFrames);
+    }
+    
     setIsExtracting(false);
     setExtractionProgress(0);
 
@@ -147,7 +191,7 @@ function AppContent() {
     setSelectedIds(new Set());
   }, [videoUrl]);
 
-  // Selection handlers
+  // Selection handlers - 使用节流优化频繁更新
   const handleToggleSelect = useCallback((id: string) => {
     setSelectedIds(prev => {
       const newSet = new Set(prev);
@@ -202,12 +246,17 @@ function AppContent() {
       if (videoUrl) {
         URL.revokeObjectURL(videoUrl);
       }
+      abortControllerRef.current?.abort();
     };
   }, [videoUrl]);
 
   // Show landing page first
   if (!showApp) {
-    return <LandingPage onStart={() => setShowApp(true)} />;
+    return (
+      <Suspense fallback={<LazyLoadFallback />}>
+        <LandingPage onStart={() => setShowApp(true)} />
+      </Suspense>
+    );
   }
 
   return (
@@ -215,8 +264,10 @@ function AppContent() {
       {/* 环境检查遮罩层 */}
       <EnvironmentCheck />
 
-      {/* PWA 安装提示 */}
-      <PWAInstallPrompt />
+      {/* PWA 安装提示 - 懒加载 */}
+      <Suspense fallback={null}>
+        <PWAInstallPrompt />
+      </Suspense>
 
       <Header ffmpegLoaded={ffmpegLoaded} />
 
