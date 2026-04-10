@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://vidtill.app/sitemap.xml
+Sitemap: https://vidtill.com/sitemap.xml
 
 # Disallow patterns (if any in the future)
 # Disallow: /admin/
