@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
-import { Upload, Play, Pause, Film, Loader2, Images, RefreshCw, RotateCcw, Monitor } from 'lucide-react';
+import { Upload, Play, Pause, Film, Loader2, Images, RefreshCw, Download, Monitor, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
+import { ExportFrameDialog } from './ExportFrameDialog';
 
 interface VideoPlayerProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -28,6 +29,7 @@ export function VideoPlayer({
   const [duration, setDuration] = useState(0);
   const [videoSize, setVideoSize] = useState({ width: 0, height: 0 });
   const [fileSize, setFileSize] = useState<string>('');
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -77,6 +79,24 @@ export function VideoPlayer({
         videoRef.current.play();
       }
       setIsPlaying(!isPlaying);
+    }
+  };
+
+  const goToPreviousFrame = () => {
+    if (videoRef.current) {
+      const fps = 30;
+      const frameDuration = 1 / fps;
+      const newTime = Math.max(0, videoRef.current.currentTime - frameDuration);
+      videoRef.current.currentTime = newTime;
+    }
+  };
+
+  const goToNextFrame = () => {
+    if (videoRef.current) {
+      const fps = 30;
+      const frameDuration = 1 / fps;
+      const newTime = Math.min(duration, videoRef.current.currentTime + frameDuration);
+      videoRef.current.currentTime = newTime;
     }
   };
 
@@ -238,15 +258,18 @@ export function VideoPlayer({
           </div>
         )}
 
-        <div className="absolute top-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="absolute top-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
           <button
-            onClick={onReupload}
+            onClick={(e) => {
+              e.stopPropagation();
+              onReupload();
+            }}
             disabled={isExtracting}
             className="premium-card rounded-lg flex items-center gap-2 px-3 py-2 transition-all duration-300 disabled:opacity-50 cursor-pointer shadow-medium hover:shadow-strong border-amber-500/20"
-            title={t('videoPlayer.changeVideo') as string}
+            title={t('videoPlayer.reset') as string}
           >
             <RefreshCw className="w-4 h-4 text-amber-400" />
-            <span className="text-sm text-amber-100/80 font-medium">{t('videoPlayer.changeVideo') as string}</span>
+            <span className="text-sm text-amber-100/80 font-medium">{t('videoPlayer.reset') as string}</span>
           </button>
         </div>
 
@@ -262,8 +285,8 @@ export function VideoPlayer({
         )}
       </div>
 
-      <div className="w-full max-w-[720px] premium-card rounded-2xl p-6 shadow-medium">
-        <div className="mb-6">
+      <div className="w-full max-w-[720px] premium-card rounded-2xl p-4 sm:p-6 shadow-medium">
+        <div className="mb-4 sm:mb-6">
           <div className="relative group">
             <input
               type="range"
@@ -276,63 +299,85 @@ export function VideoPlayer({
                   videoRef.current.currentTime = parseFloat(e.target.value);
                 }
               }}
-              className="w-full h-1.5 bg-slate-800 rounded-full appearance-none cursor-pointer hover:h-2 transition-all"
+              className="w-full h-2 sm:h-1.5 bg-slate-800 rounded-full appearance-none cursor-pointer hover:h-2.5 sm:hover:h-2 transition-all"
               style={{
                 background: `linear-gradient(to right, linear-gradient(90deg, #a1a1aa, #71717a) 0%, linear-gradient(90deg, #a1a1aa, #71717a) ${(currentTime / (duration || 1)) * 100}%, #27272A ${(currentTime / (duration || 1)) * 100}%, #27272A 100%)`
               }}
             />
           </div>
-          <div className="flex justify-between mt-3 text-sm font-mono">
+          <div className="flex justify-between mt-2 sm:mt-3 text-xs sm:text-sm font-mono">
             <span className="text-slate-300 font-semibold">{formatTime(currentTime)}</span>
             <span className="text-slate-500">{formatTime(duration)}</span>
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
           <button
-            onClick={onReupload}
+            onClick={() => setIsExportDialogOpen(true)}
             disabled={isExtracting}
-            className="flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 hover:from-zinc-700 hover:to-zinc-800 text-amber-100/90 transition-all duration-300 disabled:opacity-50 cursor-pointer border border-amber-500/20 shadow-soft hover:shadow-medium"
-            title={t('videoPlayer.reset') as string}
+            className="flex items-center justify-center gap-1.5 sm:gap-2 h-9 sm:h-11 px-3 sm:px-5 rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 hover:from-zinc-700 hover:to-zinc-800 text-amber-100/90 transition-all duration-300 disabled:opacity-50 cursor-pointer border border-amber-500/20 shadow-soft hover:shadow-medium"
+            title={t('videoPlayer.exportCurrentFrame') as string}
           >
-            <RotateCcw className="w-5 h-5 text-amber-400" />
-            <span className="text-sm font-semibold">{t('videoPlayer.reset') as string}</span>
+            <Download className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+            <span className="text-xs sm:text-sm font-semibold hidden sm:inline">{t('videoPlayer.exportCurrentFrame') as string}</span>
+            <span className="text-xs font-semibold sm:hidden">{t('videoPlayer.export') as string}</span>
           </button>
 
-          <div className="w-px h-8 bg-gradient-to-b from-transparent via-slate-700/50 to-transparent" />
+          <button
+            onClick={goToPreviousFrame}
+            disabled={isExtracting}
+            className="flex items-center justify-center h-9 w-9 sm:h-11 sm:w-11 rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 hover:from-zinc-700 hover:to-zinc-800 text-amber-100/90 transition-all duration-300 disabled:opacity-50 cursor-pointer border border-amber-500/20 shadow-soft hover:shadow-medium"
+            title={t('videoPlayer.previousFrame') as string}
+          >
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+          </button>
 
           <button
             onClick={togglePlay}
             disabled={isExtracting}
-            className="relative flex items-center justify-center gap-2 h-11 px-10 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:via-orange-400 hover:to-amber-400 text-white transition-all duration-200 disabled:opacity-50 min-w-[130px] cursor-pointer shadow-lg shadow-amber-500/20"
+            className="relative flex items-center justify-center gap-1.5 sm:gap-2 h-9 sm:h-11 px-6 sm:px-10 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:via-orange-400 hover:to-amber-400 text-white transition-all duration-200 disabled:opacity-50 min-w-[100px] sm:min-w-[130px] cursor-pointer shadow-lg shadow-amber-500/20"
             title={t('videoPlayer.spaceToPlay') as string}
           >
             {isPlaying ? (
               <>
-                <Pause className="w-5 h-5" />
-                <span className="text-sm font-bold">{t('videoPlayer.pause') as string}</span>
+                <Pause className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-xs sm:text-sm font-bold">{t('videoPlayer.pause') as string}</span>
               </>
             ) : (
               <>
-                <Play className="w-5 h-5 ml-0.5" />
-                <span className="text-sm font-bold">{t('videoPlayer.play') as string}</span>
+                <Play className="w-4 h-4 sm:w-5 sm:h-5 ml-0.5" />
+                <span className="text-xs sm:text-sm font-bold">{t('videoPlayer.play') as string}</span>
               </>
             )}
           </button>
 
-          <div className="w-px h-8 bg-gradient-to-b from-transparent via-slate-700/50 to-transparent" />
+          <button
+            onClick={goToNextFrame}
+            disabled={isExtracting}
+            className="flex items-center justify-center h-9 w-9 sm:h-11 sm:w-11 rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 hover:from-zinc-700 hover:to-zinc-800 text-amber-100/90 transition-all duration-300 disabled:opacity-50 cursor-pointer border border-amber-500/20 shadow-soft hover:shadow-medium"
+            title={t('videoPlayer.nextFrame') as string}
+          >
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+          </button>
 
           <button
             onClick={onExtractAll}
             disabled={isExtracting}
-            className="relative flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:from-rose-400 hover:via-orange-400 hover:to-amber-400 text-white transition-all duration-300 disabled:opacity-50 cursor-pointer shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 hover:scale-[1.02]"
+            className="relative flex items-center justify-center gap-1.5 sm:gap-2 h-9 sm:h-11 px-4 sm:px-6 rounded-xl bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:from-rose-400 hover:via-orange-400 hover:to-amber-400 text-white transition-all duration-300 disabled:opacity-50 cursor-pointer shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 hover:scale-[1.02]"
             title={t('videoPlayer.extractAll') as string}
           >
-            <Images className="w-5 h-5" />
-            <span className="text-sm font-bold">{t('videoPlayer.extractAll') as string}</span>
+            <Images className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-xs sm:text-sm font-bold">{t('videoPlayer.extract') as string}</span>
           </button>
         </div>
       </div>
+
+      <ExportFrameDialog
+        isOpen={isExportDialogOpen}
+        onClose={() => setIsExportDialogOpen(false)}
+        videoRef={videoRef}
+        currentTime={currentTime}
+      />
     </div>
   );
 }

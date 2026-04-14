@@ -1,7 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Image, Grid3X3, List, Trash2, Check, Download, X, Square, CheckSquare, Layers, Maximize2, Package, Fullscreen } from 'lucide-react';
+import { Image, Grid3X3, List, Trash2, Check, Download, X, Square, CheckSquare, Layers, Maximize2, Package } from 'lucide-react';
 import JSZip from 'jszip';
 import { useLanguage } from '../i18n/LanguageContext';
+import { DownloadConfigDialog, ImageFormat } from './DownloadConfigDialog';
 
 export interface Frame {
   id: string;
@@ -36,73 +37,88 @@ export function Gallery({
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
   const [previewFrame, setPreviewFrame] = useState<Frame | null>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [downloadDialogOpen, setDownloadDialogOpen] = useState(false);
+  const [downloadDialogConfig, setDownloadDialogConfig] = useState<{
+    isBatch: boolean;
+    frameCount: number;
+    defaultFileName: string;
+    onDownload: (fileName: string, format: ImageFormat, quality: number) => void;
+  }>({
+    isBatch: false,
+    frameCount: 1,
+    defaultFileName: '',
+    onDownload: () => {},
+  });
   const previewContainerRef = useRef<HTMLDivElement>(null);
 
-  const downloadFrame = useCallback((frame: Frame) => {
-    const link = document.createElement('a');
-    link.href = frame.dataUrl;
-    link.download = `${frame.videoName}_frame_${frame.timestamp.toFixed(0)}ms.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }, []);
-
-  // Fullscreen functions
-  const enterFullscreen = useCallback(async () => {
-    if (previewContainerRef.current) {
-      try {
-        if (previewContainerRef.current.requestFullscreen) {
-          await previewContainerRef.current.requestFullscreen();
+  // Auto enter fullscreen when preview opens
+  useEffect(() => {
+    const enterFullscreen = async () => {
+      if (previewContainerRef.current && previewFrame) {
+        try {
+          if (previewContainerRef.current.requestFullscreen) {
+            await previewContainerRef.current.requestFullscreen();
+          }
+        } catch (err) {
+          console.error('Failed to enter fullscreen:', err);
         }
-      } catch (err) {
-        console.error('Failed to enter fullscreen:', err);
       }
-    }
-  }, []);
+    };
 
-  const exitFullscreen = useCallback(async () => {
-    try {
-      if (document.exitFullscreen && document.fullscreenElement) {
-        await document.exitFullscreen();
-      }
-    } catch (err) {
-      console.error('Failed to exit fullscreen:', err);
+    if (previewFrame) {
+      const timer = setTimeout(() => {
+        enterFullscreen();
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, []);
+  }, [previewFrame]);
 
-  const toggleFullscreen = useCallback(async () => {
-    if (document.fullscreenElement) {
-      await exitFullscreen();
-    } else {
-      await enterFullscreen();
-    }
-  }, [enterFullscreen, exitFullscreen]);
-
-  // Listen for fullscreen changes
+  // Listen for fullscreen exit to close preview
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+      if (!document.fullscreenElement && previewFrame) {
+        setPreviewFrame(null);
+      }
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
+  }, [previewFrame]);
+
+  const downloadFrame = useCallback((frame: Frame) => {
+    const defaultFileName = `${frame.videoName}_frame_${frame.timestamp.toFixed(0)}ms`;
+    setDownloadDialogConfig({
+      isBatch: false,
+      frameCount: 1,
+      defaultFileName,
+      onDownload: (fileName: string, format: ImageFormat, quality: number) => {
+        const img = new window.Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0);
+            const mimeType = format === 'jpg' ? 'image/jpeg' : `image/${format}`;
+            const dataUrl = canvas.toDataURL(mimeType, quality);
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = `${fileName}.${format}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }
+        };
+        img.src = frame.dataUrl;
+      },
+    });
+    setDownloadDialogOpen(true);
   }, []);
 
-  // Auto enter fullscreen when preview opens
-  useEffect(() => {
-    if (previewFrame) {
-      // Small delay to ensure the DOM is ready
-      const timer = setTimeout(() => {
-        enterFullscreen();
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [previewFrame, enterFullscreen]);
-
-  const downloadAllAsZip = async () => {
+  const downloadAllAsZip = async (baseFileName: string, format: ImageFormat, quality: number) => {
     if (frames.length === 0) return;
 
     setDownloading(true);
@@ -110,16 +126,32 @@ export function Gallery({
       const zip = new JSZip();
       const folder = zip.folder('frames');
 
-      frames.forEach((frame, index) => {
-        const base64Data = frame.dataUrl.split(',')[1];
-        const fileName = `${String(index + 1).padStart(3, '0')}_${frame.videoName}_frame_${frame.timestamp.toFixed(0)}ms.png`;
-        folder?.file(fileName, base64Data, { base64: true });
-      });
+      for (let i = 0; i < frames.length; i++) {
+        const frame = frames[i];
+        const img = new window.Image();
+        await new Promise<void>((resolve) => {
+          img.onload = () => resolve();
+          img.src = frame.dataUrl;
+        });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          const mimeType = format === 'jpg' ? 'image/jpeg' : `image/${format}`;
+          const dataUrl = canvas.toDataURL(mimeType, quality);
+          const base64Data = dataUrl.split(',')[1];
+          const fileName = `${String(i + 1).padStart(3, '0')}_${baseFileName}.${format}`;
+          folder?.file(fileName, base64Data, { base64: true });
+        }
+      }
 
       const content = await zip.generateAsync({ type: 'blob' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(content);
-      link.download = `frames_${frames.length}_${Date.now()}.zip`;
+      link.download = `${baseFileName}_${frames.length}_${Date.now()}.zip`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -129,6 +161,20 @@ export function Gallery({
     } finally {
       setDownloading(false);
     }
+  };
+
+  const openBatchDownloadDialog = () => {
+    if (frames.length === 0) return;
+    const defaultFileName = `frames_${frames.length}`;
+    setDownloadDialogConfig({
+      isBatch: true,
+      frameCount: frames.length,
+      defaultFileName,
+      onDownload: (fileName: string, format: ImageFormat, quality: number) => {
+        downloadAllAsZip(fileName, format, quality);
+      },
+    });
+    setDownloadDialogOpen(true);
   };
 
   if (frames.length === 0) {
@@ -141,12 +187,6 @@ export function Gallery({
           </div>
         </div>
         <h3 className="text-2xl font-bold text-amber-100 mb-3">{(t('gallery.noFrames') as string)}</h3>
-        <p className="text-amber-200/60 text-lg" dangerouslySetInnerHTML={{ 
-          __html: (t('gallery.uploadHint') as string).replace(
-            '"提取全部帧"', 
-            '<span class="text-amber-300 font-semibold">"提取全部帧"</span>'
-          ) 
-        }} />
       </div>
     );
   }
@@ -211,7 +251,7 @@ export function Gallery({
             <div className="w-px h-8 bg-gradient-to-b from-transparent via-amber-500/30 to-transparent" />
 
             <button
-              onClick={downloadAllAsZip}
+              onClick={openBatchDownloadDialog}
               disabled={downloading}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:via-orange-400 hover:to-amber-400 text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all duration-200 disabled:opacity-50 cursor-pointer hover:scale-[1.02]"
             >
@@ -441,75 +481,76 @@ export function Gallery({
         </div>
       )}
 
-      {/* Preview Modal */}
+      {/* Preview Modal - True Fullscreen */}
       {previewFrame && (
         <div
           ref={previewContainerRef}
           className="fixed inset-0 bg-black z-[100] flex items-center justify-center"
           onClick={() => {
-            exitFullscreen();
+            if (document.fullscreenElement) {
+              document.exitFullscreen();
+            }
             setPreviewFrame(null);
           }}
         >
-          <div className="relative w-full h-full flex flex-col items-center justify-center">
-            {/* Image container - True fullscreen */}
-            <div className="relative w-full h-full flex items-center justify-center">
-              <img
-                src={previewFrame.dataUrl}
-                alt="Preview"
-                className="w-full h-full object-contain"
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
+          {/* Fullscreen Image */}
+          <img
+            src={previewFrame.dataUrl}
+            alt="Preview"
+            className="w-full h-full object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
 
-            {/* Top bar controls */}
-            <div className="absolute top-4 right-4 flex gap-2 z-10">
-              {/* Fullscreen toggle button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleFullscreen();
-                }}
-                className="p-3 bg-zinc-900/80 hover:bg-zinc-700 rounded-full text-white transition-all duration-200 hover:scale-110 shadow-lg"
-                title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-              >
-                {isFullscreen ? <Fullscreen className="w-5 h-5" /> : <Fullscreen className="w-5 h-5" />}
-              </button>
+          {/* Top bar controls */}
+          <div className="absolute top-4 right-4 flex gap-2 z-10">
+            {/* Close button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (document.fullscreenElement) {
+                  document.exitFullscreen();
+                }
+                setPreviewFrame(null);
+              }}
+              className="p-3 bg-zinc-900/80 hover:bg-red-600 rounded-full text-white transition-all duration-200 hover:scale-110 shadow-lg"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
-              {/* Close button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  exitFullscreen();
-                  setPreviewFrame(null);
-                }}
-                className="p-3 bg-zinc-900/80 hover:bg-red-600 rounded-full text-white transition-all duration-200 hover:scale-110 shadow-lg"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+          {/* Frame info */}
+          <div className="absolute top-4 left-4 px-4 py-2 bg-zinc-900/80 rounded-lg text-white/80 text-sm font-mono">
+            {(previewFrame.timestamp / 1000).toFixed(2)}s
+          </div>
 
-            {/* Frame info */}
-            <div className="absolute top-4 left-4 px-4 py-2 bg-zinc-900/80 rounded-lg text-white/80 text-sm font-mono">
-              {(previewFrame.timestamp / 1000).toFixed(2)}s
-            </div>
-
-            {/* Bottom action bar */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  downloadFrame(previewFrame);
-                }}
-                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white rounded-xl font-semibold transition-all shadow-lg hover:shadow-orange-500/30 hover:scale-105"
-              >
-                <Download className="w-4 h-4" />
-                {t('gallery.download') as string}
-              </button>
-            </div>
+          {/* Bottom action bar */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (document.fullscreenElement) {
+                  document.exitFullscreen();
+                }
+                setPreviewFrame(null);
+                downloadFrame(previewFrame);
+              }}
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white rounded-xl font-semibold transition-all shadow-lg hover:shadow-orange-500/30 hover:scale-105"
+            >
+              <Download className="w-4 h-4" />
+              {t('gallery.download') as string}
+            </button>
           </div>
         </div>
       )}
+
+      <DownloadConfigDialog
+        isOpen={downloadDialogOpen}
+        onClose={() => setDownloadDialogOpen(false)}
+        onDownload={downloadDialogConfig.onDownload}
+        defaultFileName={downloadDialogConfig.defaultFileName}
+        isBatch={downloadDialogConfig.isBatch}
+        frameCount={downloadDialogConfig.frameCount}
+      />
     </div>
   );
 }

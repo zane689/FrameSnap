@@ -1,12 +1,20 @@
 import { useState, useEffect } from 'react';
 import { AlertTriangle, RefreshCw, Chrome, Globe, Info, CheckCircle, XCircle, X } from 'lucide-react';
 import { checkEnvironment, getBrowserInfo, getSolutionUrl, type EnvCheckResult } from '../utils/envCheck';
+import { useLanguage } from '../i18n/LanguageContext';
+import { translations } from '../i18n/translations';
 
 export function EnvironmentCheck() {
+  const { currentLanguage } = useLanguage();
   const [envCheck, setEnvCheck] = useState<EnvCheckResult | null>(null);
   const [browserInfo, setBrowserInfo] = useState({ name: '', version: '', os: '' });
   const [showDetails, setShowDetails] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+
+  const t = (key: string) => {
+    const langData = (translations as any)[currentLanguage]?.envCheck || (translations as any)['en']?.envCheck || {};
+    return langData[key] || (translations as any)['en']?.envCheck?.[key] || key;
+  };
 
   useEffect(() => {
     const check = checkEnvironment();
@@ -24,20 +32,20 @@ export function EnvironmentCheck() {
       const hasWebWorkerWarning = envCheck.warnings.includes('Web Worker');
       
       return (
-        <div className="fixed top-4 right-4 z-50 max-w-sm">
+        <div className="fixed top-4 right-4 z-[9999] max-w-sm">
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 backdrop-blur-sm">
             <div className="flex items-start gap-2">
               <Info className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
               <div className="text-xs text-amber-200 flex-1">
-                <p className="font-medium mb-1">性能提示</p>
+                <p className="font-medium mb-1">{t('performanceTip')}</p>
                 {hasSharedArrayBufferWarning && (
-                  <p>未检测到 SharedArrayBuffer，将使用 Canvas 模式（适合小文件）。</p>
+                  <p>{t('sharedArrayBufferWarning')}</p>
                 )}
                 {hasWebWorkerWarning && (
-                  <p>Web Worker 不可用，将在主线程处理。</p>
+                  <p>{t('webWorkerWarning')}</p>
                 )}
                 {!hasSharedArrayBufferWarning && !hasWebWorkerWarning && (
-                  <p>未检测到跨域隔离，FFmpeg 处理大文件时可能会较慢。</p>
+                  <p>{t('crossOriginWarning')}</p>
                 )}
               </div>
               <button
@@ -65,8 +73,8 @@ export function EnvironmentCheck() {
               <AlertTriangle className="w-6 h-6 text-rose-400" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">浏览器不兼容</h2>
-              <p className="text-sm text-slate-400">您的浏览器缺少必要的功能支持</p>
+              <h2 className="text-xl font-bold text-white">{t('browserNotSupported')}</h2>
+              <p className="text-sm text-slate-400">{t('browserNotSupportedDesc')}</p>
             </div>
           </div>
         </div>
@@ -77,7 +85,7 @@ export function EnvironmentCheck() {
           <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
             <div className="flex items-center gap-2 mb-3">
               <Globe className="w-4 h-4 text-slate-400" />
-              <span className="text-sm font-medium text-slate-300">当前浏览器</span>
+              <span className="text-sm font-medium text-slate-300">{t('currentBrowser')}</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-slate-700 flex items-center justify-center">
@@ -94,7 +102,7 @@ export function EnvironmentCheck() {
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-slate-300 flex items-center gap-2">
               <XCircle className="w-4 h-4 text-rose-400" />
-              缺少的必要功能
+              {t('missingFeatures')}
             </h3>
             <div className="space-y-2">
               {envCheck.missingFeatures.map((feature) => (
@@ -109,7 +117,7 @@ export function EnvironmentCheck() {
                     rel="noopener noreferrer"
                     className="text-xs text-rose-400 hover:text-rose-300 underline"
                   >
-                    了解更多
+                    {t('learnMore')}
                   </a>
                 </div>
               ))}
@@ -120,20 +128,20 @@ export function EnvironmentCheck() {
           <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50 space-y-3">
             <h3 className="text-sm font-medium text-slate-300 flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-emerald-400" />
-              推荐解决方案
+              {t('recommendedSolutions')}
             </h3>
             <div className="space-y-2 text-sm text-slate-400">
               <p className="flex items-start gap-2">
                 <span className="text-emerald-500 mt-0.5">1.</span>
-                <span>使用最新版本的 Chrome、Edge 或 Firefox 浏览器</span>
+                <span>{t('solution1')}</span>
               </p>
               <p className="flex items-start gap-2">
                 <span className="text-emerald-500 mt-0.5">2.</span>
-                <span>确保浏览器已启用 SharedArrayBuffer 支持</span>
+                <span>{t('solution2')}</span>
               </p>
               <p className="flex items-start gap-2">
                 <span className="text-emerald-500 mt-0.5">3.</span>
-                <span>检查浏览器安全设置，确保 Web Worker 未被禁用</span>
+                <span>{t('solution3')}</span>
               </p>
             </div>
           </div>
@@ -143,7 +151,7 @@ export function EnvironmentCheck() {
             onClick={() => setShowDetails(!showDetails)}
             className="w-full text-left text-xs text-slate-500 hover:text-slate-300 transition-colors"
           >
-            {showDetails ? '隐藏' : '显示'}技术详情
+            {showDetails ? t('hideDetails') : t('showDetails')}{t('technicalDetails')}
           </button>
 
           {showDetails && (
@@ -164,7 +172,7 @@ export function EnvironmentCheck() {
               className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl transition-colors text-sm font-medium"
             >
               <RefreshCw className="w-4 h-4" />
-              刷新重试
+              {t('refreshRetry')}
             </button>
             <a
               href="https://www.google.cn/chrome/"
@@ -173,7 +181,7 @@ export function EnvironmentCheck() {
               className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white rounded-xl transition-all text-sm font-medium"
             >
               <Chrome className="w-4 h-4" />
-              下载 Chrome
+              {t('downloadChrome')}
             </a>
           </div>
         </div>

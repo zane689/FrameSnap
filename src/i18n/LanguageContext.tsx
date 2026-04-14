@@ -6,7 +6,7 @@ import { updateSEO } from '../utils/seo';
 interface LanguageContextType {
   currentLanguage: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string) => string | object;
+  t: (key: string, params?: Record<string, string | number>) => string;
   availableLanguages: { code: Language; name: string }[];
 }
 
@@ -18,6 +18,11 @@ const availableLanguages = [
   { code: 'en' as Language, name: 'English' },
   { code: 'ja' as Language, name: '日本語' },
   { code: 'ko' as Language, name: '한국어' },
+  { code: 'fr' as Language, name: 'Français' },
+  { code: 'de' as Language, name: 'Deutsch' },
+  { code: 'es' as Language, name: 'Español' },
+  { code: 'pt' as Language, name: 'Português' },
+  { code: 'it' as Language, name: 'Italiano' },
 ];
 
 // Map of language codes to our supported languages
@@ -28,6 +33,11 @@ const languageCodeMap: Record<string, Language> = {
   'ko': 'ko', 'ko-KR': 'ko', 'ko-KP': 'ko',
   'en': 'en', 'en-US': 'en', 'en-GB': 'en', 'en-CA': 'en', 'en-AU': 'en',
   'en-NZ': 'en', 'en-IE': 'en', 'en-ZA': 'en', 'en-IN': 'en',
+  'fr': 'fr', 'fr-FR': 'fr', 'fr-CA': 'fr', 'fr-BE': 'fr', 'fr-CH': 'fr',
+  'de': 'de', 'de-DE': 'de', 'de-AT': 'de', 'de-CH': 'de',
+  'es': 'es', 'es-ES': 'es', 'es-MX': 'es', 'es-AR': 'es', 'es-CO': 'es',
+  'pt': 'pt', 'pt-BR': 'pt', 'pt-PT': 'pt',
+  'it': 'it', 'it-IT': 'it', 'it-CH': 'it',
 };
 
 // Get initial language from localStorage or browser
@@ -102,10 +112,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const t = useCallback(
-    (key: string): string | object => {
+    (key: string, params?: Record<string, string | number>): string => {
       const keys = key.split('.');
       let value: unknown = translations[currentLanguage];
-      
+
       for (const k of keys) {
         if (value && typeof value === 'object' && k in value) {
           value = (value as Record<string, unknown>)[k];
@@ -119,11 +129,25 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
               return key;
             }
           }
-          return fallback as string;
+          value = fallback;
+          break;
         }
       }
-      
-      return value as string | object;
+
+      // If value is not a string, return the key
+      if (typeof value !== 'string') {
+        return key;
+      }
+
+      // Replace parameters in the string
+      if (params) {
+        return value.replace(/\{(\w+)\}/g, (match, paramKey) => {
+          const paramValue = params[paramKey];
+          return paramValue !== undefined ? String(paramValue) : match;
+        });
+      }
+
+      return value;
     },
     [currentLanguage]
   );

@@ -4,7 +4,7 @@
   <!-- Homepage - Default Language (English) -->
   <url>
     <loc>https://vidtill.com</loc>
-    <lastmod>2025-01-20</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://vidtill.com"/>
@@ -18,7 +18,7 @@
   <!-- English Version -->
   <url>
     <loc>https://vidtill.com?lang=en</loc>
-    <lastmod>2025-01-20</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://vidtill.com?lang=en"/>
@@ -32,7 +32,7 @@
   <!-- Simplified Chinese Version -->
   <url>
     <loc>https://vidtill.com?lang=zh-CN</loc>
-    <lastmod>2025-01-20</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vidtill.com?lang=zh-CN"/>
@@ -46,7 +46,7 @@
   <!-- Traditional Chinese Version -->
   <url>
     <loc>https://vidtill.com?lang=zh-TW</loc>
-    <lastmod>2025-01-20</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="zh-TW" href="https://vidtill.com?lang=zh-TW"/>
@@ -60,7 +60,7 @@
   <!-- Japanese Version -->
   <url>
     <loc>https://vidtill.com?lang=ja</loc>
-    <lastmod>2025-01-20</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="ja" href="https://vidtill.com?lang=ja"/>
@@ -74,7 +74,7 @@
   <!-- Korean Version -->
   <url>
     <loc>https://vidtill.com?lang=ko</loc>
-    <lastmod>2025-01-20</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="ko" href="https://vidtill.com?lang=ko"/>
@@ -83,5 +83,120 @@
     <xhtml:link rel="alternate" hreflang="zh-TW" href="https://vidtill.com?lang=zh-TW"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://vidtill.com?lang=ja"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://vidtill.com"/>
+  </url>
+
+  <!-- French Version -->
+  <url>
+    <loc>https://vidtill.com?lang=fr</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://vidtill.com?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vidtill.com?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vidtill.com?lang=zh-CN"/>
+    <xhtml:link rel="alternate" hreflang="zh-TW" href="https://vidtill.com?lang=zh-TW"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://vidtill.com?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://vidtill.com?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vidtill.com"/>
+  </url>
+
+  <!-- German Version -->
+  <url>
+    <loc>https://vidtill.com?lang=de</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://vidtill.com?lang=de"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vidtill.com?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vidtill.com?lang=zh-CN"/>
+    <xhtml:link rel="alternate" hreflang="zh-TW" href="https://vidtill.com?lang=zh-TW"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://vidtill.com?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://vidtill.com?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vidtill.com"/>
+  </url>
+
+  <!-- Spanish Version -->
+  <url>
+    <loc>https://vidtill.com?lang=es</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://vidtill.com?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vidtill.com?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vidtill.com?lang=zh-CN"/>
+    <xhtml:link rel="alternate" hreflang="zh-TW" href="https://vidtill.com?lang=zh-TW"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://vidtill.com?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://vidtill.com?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vidtill.com"/>
+  </url>
+
+  <!-- Portuguese Version -->
+  <url>
+    <loc>https://vidtill.com?lang=pt</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://vidtill.com?lang=pt"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vidtill.com?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vidtill.com?lang=zh-CN"/>
+    <xhtml:link rel="alternate" hreflang="zh-TW" href="https://vidtill.com?lang=zh-TW"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://vidtill.com?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://vidtill.com?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vidtill.com"/>
+  </url>
+
+  <!-- Italian Version -->
+  <url>
+    <loc>https://vidtill.com?lang=it</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="it" href="https://vidtill.com?lang=it"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vidtill.com?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://vidtill.com?lang=zh-CN"/>
+    <xhtml:link rel="alternate" hreflang="zh-TW" href="https://vidtill.com?lang=zh-TW"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://vidtill.com?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://vidtill.com?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vidtill.com"/>
+  </url>
+
+  <!-- Blog Page -->
+  <url>
+    <loc>https://vidtill.com/blog</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Blog Articles -->
+  <url>
+    <loc>https://vidtill.com/blog/how-to-extract-frames-from-video-free-2025</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://vidtill.com/blog/best-free-video-frame-extractor-tools</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://vidtill.com/blog/how-to-use-vidtill-for-video-screenshots</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://vidtill.com/blog/why-local-processing-better-for-privacy</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://vidtill.com/blog/frame-extraction-for-ai-datasets-design</loc>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>

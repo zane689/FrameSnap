@@ -4,9 +4,34 @@ Allow: /
 # Sitemap
 Sitemap: https://vidtill.com/sitemap.xml
 
-# Disallow patterns (if any in the future)
-# Disallow: /admin/
-# Disallow: /private/
+# Host
+Host: https://vidtill.com
+
+# Allow all search engine bots
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+# Disallow patterns for sensitive or unnecessary pages
+Disallow: /api/
+Disallow: /_assets/
+Disallow: /*.json$
+Disallow: /*?*utm_
+Disallow: /*?*ref=
 
 # Crawl-delay (optional, for rate limiting)
 # Crawl-delay: 10

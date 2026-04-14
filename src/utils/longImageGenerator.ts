@@ -1,13 +1,5 @@
 import type { Frame } from '../components/Gallery';
-
-export interface LongImageOptions {
-  gap?: number;
-  backgroundColor?: string;
-  watermarkColor?: string;
-  watermarkFontSize?: number;
-  watermarkPadding?: number;
-  targetWidth?: number;
-}
+import type { LongImageConfig } from '../components/LongImageConfigDialog';
 
 export interface LongImageResult {
   dataUrl: string;
@@ -16,145 +8,9 @@ export interface LongImageResult {
   fileName: string;
 }
 
-/**
- * 生成电影感长图
- * 将选中的帧纵向拼接成一张长图，带有黑色背景和水印
- */
-export async function generateCinematicLongImage(
-  frames: Frame[],
-  videoFileName: string,
-  options: LongImageOptions = {}
-): Promise<LongImageResult> {
-  const {
-    gap = 4,
-    backgroundColor = '#000000',
-    watermarkColor = 'rgba(255, 255, 255, 0.6)',
-    watermarkFontSize = 14,
-    watermarkPadding = 20,
-    targetWidth = 800,
-  } = options;
-
-  if (frames.length === 0) {
-    throw new Error('No frames selected');
-  }
-
-  if (frames.length < 3 || frames.length > 9) {
-    throw new Error('Please select 3-9 frames');
-  }
-
-  // 加载所有图片
-  const images = await Promise.all(
-    frames.map(frame => loadImage(frame.dataUrl))
-  );
-
-  // 计算目标尺寸 - 统一宽度
-  const firstImage = images[0];
-  const aspectRatio = firstImage.width / firstImage.height;
-  const finalWidth = Math.min(targetWidth, firstImage.width);
-  const finalHeight = Math.round(finalWidth / aspectRatio);
-
-  // 计算总高度
-  const totalImagesHeight = images.length * finalHeight;
-  const totalGapHeight = (images.length - 1) * gap;
-  const watermarkHeight = watermarkPadding * 2 + watermarkFontSize + 8;
-  const totalHeight = totalImagesHeight + totalGapHeight + watermarkHeight;
-
-  // 创建 Canvas
-  const canvas = document.createElement('canvas');
-  canvas.width = finalWidth;
-  canvas.height = totalHeight;
-
-  const ctx = canvas.getContext('2d');
-  if (!ctx) {
-    throw new Error('Failed to get canvas context');
-  }
-
-  // 填充黑色背景
-  ctx.fillStyle = backgroundColor;
-  ctx.fillRect(0, 0, finalWidth, totalHeight);
-
-  // 绘制每张图片
-  let currentY = 0;
-  for (let i = 0; i < images.length; i++) {
-    const img = images[i];
-
-    // 计算裁剪区域以保持统一比例
-    let sourceX = 0;
-    let sourceY = 0;
-    let sourceWidth = img.width;
-    let sourceHeight = img.height;
-
-    // 如果图片比例与目标不同，进行居中裁剪
-    const imgAspectRatio = img.width / img.height;
-    const targetAspectRatio = finalWidth / finalHeight;
-
-    if (imgAspectRatio > targetAspectRatio) {
-      // 图片更宽，裁剪左右
-      sourceWidth = img.height * targetAspectRatio;
-      sourceX = (img.width - sourceWidth) / 2;
-    } else if (imgAspectRatio < targetAspectRatio) {
-      // 图片更高，裁剪上下
-      sourceHeight = img.width / targetAspectRatio;
-      sourceY = (img.height - sourceHeight) / 2;
-    }
-
-    // 绘制图片
-    ctx.drawImage(
-      img,
-      sourceX, sourceY, sourceWidth, sourceHeight,
-      0, currentY, finalWidth, finalHeight
-    );
-
-    currentY += finalHeight + gap;
-  }
-
-  // 绘制水印区域背景（渐变）
-  const gradient = ctx.createLinearGradient(0, totalHeight - watermarkHeight, 0, totalHeight);
-  gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
-  gradient.addColorStop(0.5, 'rgba(0, 0, 0, 0.5)');
-  gradient.addColorStop(1, 'rgba(0, 0, 0, 0.8)');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, totalHeight - watermarkHeight, finalWidth, watermarkHeight);
-
-  // 绘制水印文字
-  ctx.fillStyle = watermarkColor;
-  ctx.font = `${watermarkFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-
-  // 格式化时间戳
-  const timestamp = new Date().toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-
-  // 视频文件名（去除扩展名）
-  const cleanFileName = videoFileName.replace(/\.[^/.]+$/, '');
-
-  // 绘制主水印文字
-  const watermarkText = `${cleanFileName}`;
-  ctx.fillText(watermarkText, finalWidth / 2, totalHeight - watermarkHeight / 2 - 6);
-
-  // 绘制时间戳（小字）
-  ctx.font = `${Math.max(10, watermarkFontSize - 4)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-  ctx.fillText(timestamp, finalWidth / 2, totalHeight - watermarkHeight / 2 + 12);
-
-  // 生成数据 URL
-  const dataUrl = canvas.toDataURL('image/png', 0.95);
-
-  // 生成文件名
-  const fileName = `${cleanFileName}_cinematic_${frames.length}frames_${Date.now()}.png`;
-
-  return {
-    dataUrl,
-    width: finalWidth,
-    height: totalHeight,
-    fileName,
-  };
+export interface LongImageBatchResult {
+  images: LongImageResult[];
+  totalSize: number;
 }
 
 /**
@@ -162,11 +18,258 @@ export async function generateCinematicLongImage(
  */
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
-    const img = new Image();
+    const img = new window.Image();
     img.onload = () => resolve(img);
     img.onerror = reject;
     img.src = src;
   });
+}
+
+/**
+ * 压缩图片到指定大小
+ */
+async function compressImage(
+  canvas: HTMLCanvasElement,
+  maxFileSizeMB: number,
+  initialQuality: number
+): Promise<string> {
+  let quality = initialQuality;
+  let dataUrl = canvas.toDataURL('image/jpeg', quality);
+  
+  // 估算文件大小 (base64 约为原大小的 4/3)
+  let fileSizeMB = (dataUrl.length * 3 / 4) / 1024 / 1024;
+  
+  // 如果超过限制，逐步降低质量
+  while (fileSizeMB > maxFileSizeMB && quality > 0.3) {
+    quality -= 0.05;
+    dataUrl = canvas.toDataURL('image/jpeg', quality);
+    fileSizeMB = (dataUrl.length * 3 / 4) / 1024 / 1024;
+  }
+  
+  return dataUrl;
+}
+
+/**
+ * 生成单张长图
+ */
+async function generateSingleLongImage(
+  frames: Frame[],
+  videoFileName: string,
+  config: LongImageConfig,
+  startIndex: number = 0,
+  endIndex: number = frames.length - 1
+): Promise<LongImageResult> {
+  const selectedFrames = frames.slice(startIndex, endIndex + 1);
+  
+  if (selectedFrames.length === 0) {
+    throw new Error('No frames selected');
+  }
+
+  // 加载所有图片
+  const images = await Promise.all(
+    selectedFrames.map(frame => loadImage(frame.dataUrl))
+  );
+
+  // 计算布局
+  const { layout, columns, gap, padding, borderRadius, borderWidth } = config;
+  
+  // 获取第一张图片的宽高比
+  const firstImage = images[0];
+  const aspectRatio = firstImage.width / firstImage.height;
+  
+  // 计算目标尺寸
+  let targetWidth: number;
+  let itemWidth: number;
+  let itemHeight: number;
+  let totalWidth: number;
+  let totalHeight: number;
+  let rows: number;
+
+  if (layout === 'vertical') {
+    // 纵向布局
+    targetWidth = Math.min(800, firstImage.width);
+    itemWidth = targetWidth - padding * 2;
+    itemHeight = itemWidth / aspectRatio;
+    totalWidth = targetWidth;
+    totalHeight = images.length * itemHeight + (images.length - 1) * gap + padding * 2;
+    rows = images.length;
+  } else if (layout === 'horizontal') {
+    // 横向布局
+    targetWidth = Math.min(400, firstImage.width);
+    itemWidth = targetWidth - padding * 2;
+    itemHeight = itemWidth / aspectRatio;
+    totalWidth = images.length * itemWidth + (images.length - 1) * gap + padding * 2;
+    totalHeight = itemHeight + padding * 2;
+    rows = 1;
+  } else {
+    // 网格布局
+    targetWidth = Math.min(1200, firstImage.width * columns);
+    itemWidth = (targetWidth - padding * 2 - (columns - 1) * gap) / columns;
+    itemHeight = itemWidth / aspectRatio;
+    rows = Math.ceil(images.length / columns);
+    totalWidth = targetWidth;
+    totalHeight = rows * itemHeight + (rows - 1) * gap + padding * 2;
+  }
+
+  // 添加水印高度
+  let watermarkHeight = 0;
+  if (config.showWatermark) {
+    watermarkHeight = config.watermarkFontSize * 3 + padding;
+  }
+  totalHeight += watermarkHeight;
+
+  // 创建 Canvas
+  const canvas = document.createElement('canvas');
+  canvas.width = totalWidth;
+  canvas.height = totalHeight;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    throw new Error('Failed to get canvas context');
+  }
+
+  // 填充背景
+  ctx.fillStyle = config.backgroundColor;
+  ctx.fillRect(0, 0, totalWidth, totalHeight);
+
+  // 绘制每张图片
+  for (let i = 0; i < images.length; i++) {
+    const img = images[i];
+    let x: number;
+    let y: number;
+
+    if (layout === 'vertical') {
+      x = padding;
+      y = padding + i * (itemHeight + gap);
+    } else if (layout === 'horizontal') {
+      x = padding + i * (itemWidth + gap);
+      y = padding;
+    } else {
+      const row = Math.floor(i / columns);
+      const col = i % columns;
+      x = padding + col * (itemWidth + gap);
+      y = padding + row * (itemHeight + gap);
+    }
+
+    // 绘制圆角矩形裁剪区域
+    if (borderRadius > 0) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(x, y, itemWidth, itemHeight, borderRadius);
+      ctx.clip();
+    }
+
+    // 绘制图片
+    ctx.drawImage(img, x, y, itemWidth, itemHeight);
+
+    if (borderRadius > 0) {
+      ctx.restore();
+    }
+
+    // 绘制边框
+    if (borderWidth > 0) {
+      ctx.strokeStyle = config.borderColor;
+      ctx.lineWidth = borderWidth;
+      if (borderRadius > 0) {
+        ctx.beginPath();
+        ctx.roundRect(x, y, itemWidth, itemHeight, borderRadius);
+        ctx.stroke();
+      } else {
+        ctx.strokeRect(x, y, itemWidth, itemHeight);
+      }
+    }
+  }
+
+  // 绘制水印
+  if (config.showWatermark && config.watermarkText) {
+    const watermarkY = totalHeight - watermarkHeight / 2;
+    
+    // 水印背景渐变
+    const gradient = ctx.createLinearGradient(0, totalHeight - watermarkHeight, 0, totalHeight);
+    gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0.5)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, totalHeight - watermarkHeight, totalWidth, watermarkHeight);
+
+    // 水印文字
+    ctx.fillStyle = config.watermarkColor;
+    ctx.font = `${config.watermarkFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(config.watermarkText, totalWidth / 2, watermarkY);
+  }
+
+  // 生成数据 URL
+  const dataUrl = await compressImage(canvas, config.maxFileSize, config.quality);
+
+  // 生成文件名
+  const cleanFileName = videoFileName.replace(/\.[^/.]+$/, '');
+  const timestamp = Date.now();
+  const fileName = `${cleanFileName}_long_${selectedFrames.length}frames_${timestamp}.jpg`;
+
+  return {
+    dataUrl,
+    width: totalWidth,
+    height: totalHeight,
+    fileName,
+  };
+}
+
+/**
+ * 生成电影感长图（支持分段）
+ */
+export async function generateCinematicLongImage(
+  frames: Frame[],
+  videoFileName: string,
+  config: LongImageConfig
+): Promise<LongImageBatchResult> {
+  if (frames.length < 3 || frames.length > 9) {
+    throw new Error('Please select 3-9 frames');
+  }
+
+  const results: LongImageResult[] = [];
+
+  if (config.splitIntoChunks) {
+    // 分段生成
+    let currentIndex = 0;
+    let chunkIndex = 0;
+
+    while (currentIndex < frames.length) {
+      // 估算每张图片的高度
+      const estimatedItemHeight = 800; // 估算值
+      const itemsPerChunk = Math.max(2, Math.floor(config.chunkHeight / estimatedItemHeight));
+      const endIndex = Math.min(currentIndex + itemsPerChunk - 1, frames.length - 1);
+
+      const result = await generateSingleLongImage(
+        frames,
+        videoFileName,
+        config,
+        currentIndex,
+        endIndex
+      );
+
+      // 修改文件名添加分段标识
+      const baseFileName = result.fileName.replace('.jpg', '');
+      result.fileName = `${baseFileName}_part${chunkIndex + 1}.jpg`;
+
+      results.push(result);
+
+      currentIndex = endIndex + 1;
+      chunkIndex++;
+    }
+  } else {
+    // 生成单张
+    const result = await generateSingleLongImage(frames, videoFileName, config);
+    results.push(result);
+  }
+
+  // 计算总大小
+  const totalSize = results.reduce((sum, r) => sum + (r.dataUrl.length * 3 / 4), 0) / 1024 / 1024;
+
+  return {
+    images: results,
+    totalSize,
+  };
 }
 
 /**
@@ -182,13 +285,24 @@ export function downloadLongImage(result: LongImageResult): void {
 }
 
 /**
+ * 批量下载长图
+ */
+export function downloadLongImages(results: LongImageBatchResult): void {
+  results.images.forEach((image, index) => {
+    setTimeout(() => {
+      downloadLongImage(image);
+    }, index * 500); // 延迟下载避免浏览器阻塞
+  });
+}
+
+/**
  * 生成电影感长图并自动下载
  */
 export async function generateAndDownloadLongImage(
   frames: Frame[],
   videoFileName: string,
-  options?: LongImageOptions
+  config: LongImageConfig
 ): Promise<void> {
-  const result = await generateCinematicLongImage(frames, videoFileName, options);
-  downloadLongImage(result);
+  const results = await generateCinematicLongImage(frames, videoFileName, config);
+  downloadLongImages(results);
 }

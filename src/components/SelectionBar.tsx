@@ -1,8 +1,5 @@
-import { useState } from 'react';
-import { CheckSquare, Square, Loader2, Sparkles, Trash2, Download } from 'lucide-react';
-import JSZip from 'jszip';
+import { CheckSquare, Square, Sparkles, Trash2, Download } from 'lucide-react';
 import type { Frame } from './Gallery';
-import { generateAndDownloadLongImage } from '../utils/longImageGenerator';
 import { useLanguage } from '../i18n/LanguageContext';
 
 interface SelectionBarProps {
@@ -10,7 +7,8 @@ interface SelectionBarProps {
   selectedIds: Set<string>;
   onClearSelection: () => void;
   onUpdateFrames: (frames: Frame[]) => void;
-  videoFileName?: string;
+  onDownloadSelected?: () => void;
+  onLongImageClick?: () => void;
 }
 
 export function SelectionBar({
@@ -18,41 +16,23 @@ export function SelectionBar({
   selectedIds,
   onClearSelection,
   onUpdateFrames,
-  videoFileName = 'video'
+  onDownloadSelected,
+  onLongImageClick
 }: SelectionBarProps) {
   const { t } = useLanguage();
   const selectedCount = selectedIds.size;
-  const [generatingLongImage, setGeneratingLongImage] = useState(false);
 
   if (selectedCount === 0) {
     return null;
   }
 
-  const handleDownloadSelected = async () => {
+  const handleDownloadSelected = () => {
     if (selectedCount === 0) return;
-
-    const selectedFrames = frames.filter(f => selectedIds.has(f.id));
     
-    try {
-      const zip = new JSZip();
-      const folder = zip.folder('selected_frames');
-
-      selectedFrames.forEach((frame, index) => {
-        const base64Data = frame.dataUrl.split(',')[1];
-        const fileName = `${String(index + 1).padStart(3, '0')}_${frame.videoName}_frame_${frame.timestamp.toFixed(0)}ms.png`;
-        folder?.file(fileName, base64Data, { base64: true });
-      });
-
-      const content = await zip.generateAsync({ type: 'blob' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(content);
-      link.download = `selected_frames_${selectedCount}_${Date.now()}.zip`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
-    } catch (error) {
-      console.error('Failed to create zip:', error);
+    // 如果提供了回调，使用回调打开下载配置弹窗
+    if (onDownloadSelected) {
+      onDownloadSelected();
+      return;
     }
   };
 
@@ -62,25 +42,14 @@ export function SelectionBar({
     onClearSelection();
   };
 
-  const handleGenerateLongImage = async () => {
+  const handleGenerateLongImage = () => {
     if (selectedCount < 3 || selectedCount > 9) {
       alert(t('selectionBar.select3To9') as string);
       return;
     }
 
-    setGeneratingLongImage(true);
-    try {
-      const selectedFrames = frames.filter(f => selectedIds.has(f.id));
-      await generateAndDownloadLongImage(selectedFrames, videoFileName, {
-        gap: 4,
-        targetWidth: 800,
-      });
-    } catch (error) {
-      console.error('Failed to generate long image:', error);
-      alert('Failed to generate long image, please try again');
-    } finally {
-      setGeneratingLongImage(false);
-    }
+    // 调用父组件传入的回调，打开长图配置对话框
+    onLongImageClick?.();
   };
 
   const canGenerateLongImage = selectedCount >= 3 && selectedCount <= 9;
@@ -126,7 +95,7 @@ export function SelectionBar({
             {/* 生成电影感长图按钮 */}
             <button
               onClick={handleGenerateLongImage}
-              disabled={generatingLongImage || !canGenerateLongImage}
+              disabled={!canGenerateLongImage}
               title={canGenerateLongImage ? (t('selectionBar.movieLongImage') as string) : (t('selectionBar.select3To9') as string)}
               className={`
                 relative group flex items-center justify-center gap-1 px-2 sm:px-3 py-2 text-[10px] sm:text-xs font-semibold rounded-lg transition-all duration-200 overflow-hidden cursor-pointer whitespace-nowrap
@@ -140,12 +109,8 @@ export function SelectionBar({
               {canGenerateLongImage && (
                 <div className="absolute inset-0 bg-gradient-to-r from-zinc-400 via-zinc-400 to-zinc-400 opacity-0 group-hover:opacity-30 transition-opacity duration-200" />
               )}
-              {generatingLongImage ? (
-                <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-spin flex-shrink-0" />
-              ) : (
-                <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
-              )}
-              <span className="truncate">{generatingLongImage ? (t('selectionBar.generating') as string) : (t('selectionBar.movieLongImage') as string)}</span>
+              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+              <span className="truncate">{(t('selectionBar.movieLongImage') as string)}</span>
             </button>
 
             {/* 下载按钮 */}

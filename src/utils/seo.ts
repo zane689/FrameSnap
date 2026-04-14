@@ -57,7 +57,7 @@ export function updateSEO(language: Language, seoConfig: SEOConfig) {
 
 function updateHreflangLinks(currentLanguage: Language) {
   const baseUrl = 'https://vidtill.app';
-  const languages: Language[] = ['zh-CN', 'zh-TW', 'en', 'ja', 'ko'];
+  const languages: Language[] = ['zh-CN', 'zh-TW', 'en', 'ja', 'ko', 'fr', 'de', 'es', 'pt', 'it'];
 
   // Update or create hreflang links
   languages.forEach((lang) => {

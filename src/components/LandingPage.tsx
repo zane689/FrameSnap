@@ -16,23 +16,36 @@ import {
   Video,
   Scissors,
   Layers,
-  Github,
   Menu,
   X,
-  Globe
+  Globe,
+  Clock,
+  Gauge,
+  KeyRound,
+  Target,
+  Image,
+  Languages,
+  Palette,
+  Scissors as ScissorsIcon,
+  HelpCircle,
+  ChevronRight,
+  FileText
 } from 'lucide-react';
 import { useLanguage, type Language } from '../i18n/LanguageContext';
+import { translations } from '../i18n/translations';
 
 interface LandingPageProps {
   onStart: () => void;
+  onNavigate?: (page: string) => void;
 }
 
-export function LandingPage({ onStart }: LandingPageProps) {
+export function LandingPage({ onStart, onNavigate }: LandingPageProps) {
   const { t, currentLanguage, setLanguage, availableLanguages } = useLanguage();
   const [isVisible, setIsVisible] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const langMenuRef = useRef<HTMLDivElement>(null);
 
@@ -68,6 +81,12 @@ export function LandingPage({ onStart }: LandingPageProps) {
     setMobileMenuOpen(false);
   };
 
+  const handleBlogClick = () => {
+    if (onNavigate) {
+      onNavigate('blog');
+    }
+  };
+
   const handleLanguageChange = (code: Language) => {
     setLanguage(code);
     setLangMenuOpen(false);
@@ -84,6 +103,23 @@ export function LandingPage({ onStart }: LandingPageProps) {
     { icon: Zap, key: 'speed', bgClass: 'bg-gradient-to-br from-yellow-500 to-yellow-600', shadowClass: 'shadow-yellow-500/30' },
     { icon: Download, key: 'download', bgClass: 'bg-gradient-to-br from-rose-500 to-rose-600', shadowClass: 'shadow-rose-500/30' },
     { icon: CheckCircle2, key: 'format', bgClass: 'bg-gradient-to-br from-cyan-500 to-cyan-600', shadowClass: 'shadow-cyan-500/30' },
+  ];
+
+  // Extraction modes
+  const extractionModes = [
+    { icon: Clock, key: 'timeInterval', bgClass: 'bg-gradient-to-br from-blue-500 to-blue-600', shadowClass: 'shadow-blue-500/30' },
+    { icon: Film, key: 'frameInterval', bgClass: 'bg-gradient-to-br from-purple-500 to-purple-600', shadowClass: 'shadow-purple-500/30' },
+    { icon: Gauge, key: 'fixedFps', bgClass: 'bg-gradient-to-br from-pink-500 to-pink-600', shadowClass: 'shadow-pink-500/30' },
+    { icon: KeyRound, key: 'keyframe', bgClass: 'bg-gradient-to-br from-indigo-500 to-indigo-600', shadowClass: 'shadow-indigo-500/30' },
+    { icon: ScissorsIcon, key: 'timeRange', bgClass: 'bg-gradient-to-br from-teal-500 to-teal-600', shadowClass: 'shadow-teal-500/30' },
+    { icon: Target, key: 'precise', bgClass: 'bg-gradient-to-br from-red-500 to-red-600', shadowClass: 'shadow-red-500/30' },
+  ];
+
+  // Additional features
+  const advancedFeatures = [
+    { icon: Image, key: 'longImage', bgClass: 'bg-gradient-to-br from-amber-500 to-orange-600', shadowClass: 'shadow-amber-500/30' },
+    { icon: Languages, key: 'multilingual', bgClass: 'bg-gradient-to-br from-green-500 to-emerald-600', shadowClass: 'shadow-green-500/30' },
+    { icon: Palette, key: 'customize', bgClass: 'bg-gradient-to-br from-violet-500 to-purple-600', shadowClass: 'shadow-violet-500/30' },
   ];
 
   // Step items with translation keys and full Tailwind classes
@@ -137,16 +173,16 @@ export function LandingPage({ onStart }: LandingPageProps) {
               >
                 {t('nav.features') as string}
               </button>
-              <a 
-                href="https://github.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors"
-              >
-                <Github className="w-4 h-4" />
-                {t('nav.github') as string}
-              </a>
               
+              {/* Blog Link */}
+              <button
+                onClick={handleBlogClick}
+                className="flex items-center gap-2 text-sm text-zinc-400 hover:text-amber-400 transition-colors"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Blog</span>
+              </button>
+
               {/* Language Switcher */}
               <div className="relative" ref={langMenuRef}>
                 <button
@@ -211,16 +247,6 @@ export function LandingPage({ onStart }: LandingPageProps) {
               >
                 {t('nav.features') as string}
               </button>
-              <a 
-                href="https://github.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-3 text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-lg transition-colors"
-              >
-                <Github className="w-4 h-4" />
-                {t('nav.github') as string}
-              </a>
-              
               {/* Mobile Language Options */}
               <div className="px-4 py-2">
                 <p className="text-xs text-zinc-500 mb-2">{t('language') as string}</p>
@@ -385,6 +411,82 @@ export function LandingPage({ onStart }: LandingPageProps) {
         </div>
       </section>
 
+      {/* Extraction Modes Section */}
+      <section className="py-16 sm:py-24 lg:py-32 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-950/20 to-transparent" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-12 sm:mb-20">
+            <div className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-blue-500/20 rounded-full border border-blue-400/40 mb-6 sm:mb-8 shadow-lg shadow-blue-500/10">
+              <Target className="w-4 sm:w-5 h-4 sm:h-5 text-blue-400" />
+              <span className="text-xs sm:text-sm font-bold text-blue-300">{t('modes.title') as string}</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black mb-4 sm:mb-6 bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">
+              {t('modes.subtitle') as string}
+            </h2>
+            <p className="text-base sm:text-xl text-zinc-400 max-w-2xl mx-auto px-2 sm:px-0">
+              {t('modes.description') as string}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
+            {extractionModes.map((mode, index) => (
+              <div key={index} className="group relative p-4 sm:p-6 bg-gradient-to-br from-zinc-900/90 to-zinc-900/50 backdrop-blur-xl rounded-xl sm:rounded-2xl border border-zinc-700 hover:border-blue-500/50 transition-all duration-500 hover:scale-[1.02] overflow-hidden shadow-2xl shadow-black/50 text-center">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative">
+                  <div className={`w-10 h-10 sm:w-14 sm:h-14 ${mode.bgClass} rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform shadow-xl ${mode.shadowClass}`}>
+                    <mode.icon className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
+                  </div>
+                  <h3 className="text-sm sm:text-base font-bold mb-1 sm:mb-2 text-white group-hover:text-blue-300 transition-colors">
+                    {(t(`modes.items.${mode.key}.title`) as string)}
+                  </h3>
+                  <p className="text-xs text-zinc-400 leading-relaxed">
+                    {(t(`modes.items.${mode.key}.desc`) as string)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Advanced Features Section */}
+      <section className="py-16 sm:py-24 lg:py-32 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-violet-950/20 to-transparent" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-12 sm:mb-20">
+            <div className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-violet-500/20 rounded-full border border-violet-400/40 mb-6 sm:mb-8 shadow-lg shadow-violet-500/10">
+              <Sparkles className="w-4 sm:w-5 h-4 sm:h-5 text-violet-400" />
+              <span className="text-xs sm:text-sm font-bold text-violet-300">{t('advanced.title') as string}</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black mb-4 sm:mb-6 bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">
+              {t('advanced.subtitle') as string}
+            </h2>
+            <p className="text-base sm:text-xl text-zinc-400 max-w-2xl mx-auto px-2 sm:px-0">
+              {t('advanced.description') as string}
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+            {advancedFeatures.map((feature, index) => (
+              <div key={index} className="group relative p-6 sm:p-8 bg-gradient-to-br from-zinc-900/90 to-zinc-900/50 backdrop-blur-xl rounded-2xl sm:rounded-3xl border border-zinc-700 hover:border-violet-500/50 transition-all duration-500 hover:scale-[1.02] overflow-hidden shadow-2xl shadow-black/50">
+                <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative">
+                  <div className={`w-12 h-12 sm:w-16 sm:h-16 ${feature.bgClass} rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform shadow-xl ${feature.shadowClass}`}>
+                    <feature.icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                  </div>
+                  <h3 className="text-lg sm:text-2xl font-bold mb-2 sm:mb-3 text-white group-hover:text-violet-300 transition-colors">
+                    {(t(`advanced.items.${feature.key}.title`) as string)}
+                  </h3>
+                  <p className="text-sm sm:text-base text-zinc-400 leading-relaxed">
+                    {(t(`advanced.items.${feature.key}.desc`) as string)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* How It Works */}
       <section className="py-16 sm:py-24 lg:py-32 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-orange-950/20 to-transparent" />
@@ -414,6 +516,60 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 {index < 2 && (
                   <div className="hidden sm:block absolute top-10 lg:top-12 left-[60%] lg:left-[65%] w-full h-0.5 bg-gradient-to-r from-amber-500/50 to-transparent" />
                 )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-16 sm:py-24 lg:py-32 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-zinc-950/30 to-transparent" />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-12 sm:mb-16">
+            <div className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-zinc-500/20 rounded-full border border-zinc-400/40 mb-6 sm:mb-8 shadow-lg shadow-zinc-500/10">
+              <HelpCircle className="w-4 sm:w-5 h-4 sm:h-5 text-zinc-400" />
+              <span className="text-xs sm:text-sm font-bold text-zinc-300">{t('faq.badge') as string}</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black mb-4 sm:mb-6 bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">
+              {t('faq.title') as string}
+            </h2>
+            <p className="text-base sm:text-xl text-zinc-400 max-w-2xl mx-auto px-2 sm:px-0">
+              {t('faq.description') as string}
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            {(((translations as any)[currentLanguage]?.faq?.items || (translations as any)['en']?.faq?.items) || [])?.map((item: { q: string; a: string }, index: number) => (
+              <div
+                key={index}
+                className="group bg-gradient-to-br from-zinc-900/90 to-zinc-900/50 backdrop-blur-xl rounded-xl sm:rounded-2xl border border-zinc-700 hover:border-zinc-500/50 transition-all duration-300 overflow-hidden shadow-2xl shadow-black/50"
+              >
+                <button
+                  onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
+                  className="w-full flex items-center justify-between p-5 sm:p-6 text-left"
+                >
+                  <span className="text-sm sm:text-lg font-bold text-white group-hover:text-zinc-200 transition-colors pr-4">
+                    {item.q}
+                  </span>
+                  <ChevronRight
+                    className={`w-5 h-5 sm:w-6 sm:h-6 text-zinc-400 flex-shrink-0 transition-transform duration-300 ${
+                      openFaqIndex === index ? 'rotate-90' : ''
+                    }`}
+                  />
+                </button>
+                <div
+                  className={`overflow-hidden transition-all duration-300 ${
+                    openFaqIndex === index ? 'max-h-96' : 'max-h-0'
+                  }`}
+                >
+                  <div className="px-5 sm:px-6 pb-5 sm:pb-6">
+                    <p className="text-sm sm:text-base text-zinc-400 leading-relaxed">
+                      {item.a}
+                    </p>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -467,7 +623,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
               <a href="#" className="text-sm sm:text-base text-zinc-400 hover:text-amber-400 transition-colors">{t('footer.feedback') as string}</a>
             </div>
             <p className="text-sm sm:text-base text-zinc-500 text-center">
-              © 2024 Vidtill. {t('footer.copyright') as string}
+              © 2026 Vidtill. {t('footer.copyright') as string}
             </p>
           </div>
         </div>
